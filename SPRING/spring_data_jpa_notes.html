@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spring Data JPA Notes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+  :root{--green:#1a7a45;--green-light:#e8f5ee;--green-mid:#2e9e5e;--orange:#d84315;--blue:#1565c0;--yellow-bg:#fffde7;--yellow-border:#f9a825;--border:#dde3e8;--text:#1e2a23;--muted:#546e5a;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:#eef2f0;color:var(--text);line-height:1.75;font-size:15px;}
+  .page{max-width:960px;margin:30px auto;background:#fff;border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,.1);overflow:hidden;}
+  .hdr{background:linear-gradient(135deg,#14532d,var(--green-mid));color:#fff;padding:40px 48px;}
+  .hdr h1{font-size:2rem;font-weight:700;}
+  .hdr p{margin-top:6px;opacity:.82;font-size:.92rem;}
+  .hdr .topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .hdr .topics span{background:rgba(255,255,255,.18);border-radius:20px;padding:3px 13px;font-size:.78rem;}
+  .toc{background:var(--green-light);border-bottom:2px solid #b7dfc8;padding:22px 48px;}
+  .toc h3{font-size:.85rem;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:10px;}
+  .toc ol{padding-left:18px;columns:2;column-gap:40px;}
+  .toc li{font-size:.88rem;margin:3px 0;color:var(--green);}
+  .body{padding:40px 48px;}
+  .sec{margin-bottom:46px;}
+  .sec-title{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid var(--green-light);}
+  .sec-num{background:var(--green);color:#fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;}
+  .sec-title h2{font-size:1.25rem;color:var(--green);font-weight:700;}
+  .def-box{background:var(--green-light);border:1px solid #a8dbbf;border-left:4px solid var(--green-mid);border-radius:6px;padding:13px 17px;margin:12px 0;font-size:.91rem;}
+  .def-box strong{color:var(--green);display:block;margin-bottom:4px;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;}
+  .note-box{background:var(--yellow-bg);border-left:4px solid var(--yellow-border);border-radius:0 6px 6px 0;padding:11px 15px;margin:12px 0;font-size:.9rem;}
+  .note-box strong{color:var(--orange);}
+  .warn-box{background:#fff3e0;border-left:4px solid #e65100;border-radius:0 6px 6px 0;padding:11px 15px;margin:12px 0;font-size:.9rem;}
+  .warn-box strong{color:#e65100;}
+  .tab-group{margin:14px 0;}
+  .tab-btns{display:flex;gap:0;}
+  .tab-btn{padding:7px 18px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;font-family:'Inter',sans-serif;border-radius:6px 6px 0 0;background:#d0e8da;color:var(--green);}
+  .tab-btn.active{background:#0d1f13;color:#7ee8a2;}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+  pre{background:#0d1f13;color:#b2f0c8;border-radius:0 8px 8px 8px;padding:20px 22px;font-family:'Fira Code',monospace;font-size:.8rem;overflow-x:auto;margin:0 0 14px;line-height:1.7;position:relative;}
+  pre.solo{border-radius:8px;margin:14px 0;}
+  pre .lang-label{position:absolute;top:8px;right:12px;font-size:.68rem;color:#5a8a6a;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:.5px;}
+  .kw{color:#7ee8a2;font-weight:600;}
+  .cm{color:#4e7a5e;font-style:italic;}
+  .st{color:#f4d06f;}
+  .tg{color:#7ee8a2;}
+  .at{color:#f4d06f;}
+  .vl{color:#f48c6f;}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.88rem;}
+  thead tr{background:var(--green);}
+  th{color:#fff;padding:10px 14px;text-align:left;font-weight:600;}
+  td{padding:9px 14px;border-bottom:1px solid var(--border);}
+  tr:nth-child(even) td{background:#f8fbf9;}
+  .check{color:#2e9e5e;font-weight:700;}
+  .cross{color:#c62828;font-weight:700;}
+  .divider{border:none;border-top:2px dashed #c8e6c9;margin:38px 0;}
+  .cheat{background:#0d1f13;border-radius:10px;padding:24px 28px;color:#b2f0c8;}
+  .cheat h3{color:#7ee8a2;font-size:1rem;margin-bottom:16px;border-bottom:1px solid #1e4030;padding-bottom:8px;}
+  .cheat table th{background:#14532d;color:#7ee8a2;}
+  .cheat table td{border-bottom:1px solid #1e4030;color:#b2f0c8;}
+  .cheat tr:nth-child(even) td{background:#111f16;}
+  .dl-bar{background:var(--green-light);padding:24px 48px;border-top:2px solid #b7dfc8;text-align:center;}
+  .dl-btn{background:linear-gradient(135deg,#14532d,var(--green-mid));color:#fff;border:none;padding:13px 36px;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;}
+  .dl-btn:hover{opacity:.9;}
+  h3.sub{font-size:1rem;color:var(--green);margin:18px 0 8px;border-left:3px solid var(--green-mid);padding-left:10px;}
+  p{margin:8px 0;}ul,ol{padding-left:22px;margin:8px 0;}li{margin:5px 0;}
+  .flow{background:#f8fbf9;border:2px solid #b7dfc8;border-radius:10px;padding:18px 24px;margin:14px 0;font-size:.85rem;line-height:2.2;}
+  .flow .step{display:flex;align-items:flex-start;gap:10px;margin:2px 0;}
+  .flow .arrow{color:var(--green);font-size:1.1rem;min-width:20px;}
+  .arch-diagram{display:flex;flex-direction:column;align-items:center;gap:0;margin:16px 0;}
+  .arch-box{background:var(--green);color:#fff;border-radius:8px;padding:10px 30px;font-weight:600;font-size:.9rem;text-align:center;min-width:220px;}
+  .arch-box.blue{background:var(--blue);}
+  .arch-box.orange{background:var(--orange);}
+  .arch-box.gray{background:#546e5a;}
+  .arch-arr{color:var(--green);font-size:1.4rem;line-height:1.2;}
+  .rel-diagram{background:#f8fbf9;border:2px solid #b7dfc8;border-radius:10px;padding:20px;margin:14px 0;font-family:'Fira Code',monospace;font-size:.82rem;}
+  .rel-row{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0;flex-wrap:wrap;}
+  .rel-box{background:#1a7a45;color:#fff;border-radius:6px;padding:8px 18px;font-size:.82rem;}
+  .rel-box.b{background:#1565c0;}
+  .rel-line{color:#1a7a45;font-size:1rem;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="hdr">
+  <h1>🗄 Spring Data JPA — Complete Notes</h1>
+  <p>ORM · Hibernate · Entity Mapping · Repositories · JPQL · Criteria Query · Transactions</p>
+  <div class="topics">
+    <span>Spring Data JPA Setup</span><span>@Entity &amp; Annotations</span>
+    <span>One-to-One</span><span>One-to-Many</span><span>Many-to-Many</span>
+    <span>CrudRepository</span><span>JpaRepository</span>
+    <span>JPQL</span><span>Criteria Query</span><span>@Transactional</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li>What is ORM, JPA, Hibernate?</li>
+    <li>Spring Data JPA Architecture</li>
+    <li>Creating a Spring Data JPA Project</li>
+    <li>application.properties Setup</li>
+    <li>Defining Entity Class (@Entity)</li>
+    <li>JPA Annotations Reference</li>
+    <li>Entity Mapping — One-to-One</li>
+    <li>Entity Mapping — One-to-Many</li>
+    <li>Entity Mapping — Many-to-Many</li>
+    <li>CrudRepository</li>
+    <li>JpaRepository</li>
+    <li>Custom Query Methods</li>
+    <li>JPQL</li>
+    <li>Criteria Query</li>
+    <li>Spring Data JPA &amp; Transactions</li>
+    <li>Interview Q&amp;A</li>
+    <li>Quick Reference Cheat Sheet</li>
+  </ol>
+</div>
+
+<div class="body">
+
+<!-- ══════════════════════════════ SEC 1 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">1</div><h2>What is ORM, JPA &amp; Hibernate?</h2></div>
+
+  <div class="def-box"><strong>ORM — Object Relational Mapping</strong>
+    A technique that maps Java classes to database tables automatically. Instead of writing SQL manually, you work with Java objects and ORM converts them to DB operations behind the scenes.
+  </div>
+  <div class="def-box"><strong>JPA — Java Persistence API</strong>
+    JPA is a <b>specification</b> (a set of rules / interface) that defines how Java objects should be persisted to a relational database. It is NOT an implementation — it just defines the contract.
+  </div>
+  <div class="def-box"><strong>Hibernate</strong>
+    Hibernate is the most popular <b>implementation</b> of JPA. When you use Spring Data JPA, Hibernate is used internally to do the actual database work.
+  </div>
+  <div class="def-box"><strong>Spring Data JPA</strong>
+    A Spring module that sits on top of JPA/Hibernate and provides ready-made repository interfaces. You write almost zero boilerplate — just define an interface and Spring generates the implementation automatically.
+  </div>
+
+  <div class="note-box"><strong>💡 Analogy:</strong>
+    JPA = the rules of a driving test (specification).<br/>
+    Hibernate = the actual car you drive (implementation).<br/>
+    Spring Data JPA = automatic driving mode — even the gears are handled for you.
+  </div>
+
+  <h3 class="sub">Class ↔ Table Mapping</h3>
+  <table>
+    <thead><tr><th>Java (OOP)</th><th>Database (Relational)</th></tr></thead>
+    <tbody>
+      <tr><td>Class</td><td>Table</td></tr>
+      <tr><td>Object (instance)</td><td>Row</td></tr>
+      <tr><td>Field / Property</td><td>Column</td></tr>
+      <tr><td>Primary Key field</td><td>Primary Key column</td></tr>
+      <tr><td>Reference to another object</td><td>Foreign Key</td></tr>
+    </tbody>
+  </table>
+
+  <div class="arch-diagram">
+    <div class="arch-box">Your Java Code (Objects)</div>
+    <div class="arch-arr">↕</div>
+    <div class="arch-box">Spring Data JPA (Repositories)</div>
+    <div class="arch-arr">↕</div>
+    <div class="arch-box blue">JPA API (Specification)</div>
+    <div class="arch-arr">↕</div>
+    <div class="arch-box orange">Hibernate (Implementation)</div>
+    <div class="arch-arr">↕</div>
+    <div class="arch-box gray">MySQL / Database</div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 2 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">2</div><h2>Creating a Spring Data JPA Project</h2></div>
+
+  <div class="flow">
+    <div class="step"><span class="arrow">①</span><span>Go to <b>start.spring.io</b> → Create Spring Boot project</span></div>
+    <div class="step"><span class="arrow">②</span><span>Add dependencies: <b>Spring Data JPA</b> + <b>MySQL Driver</b></span></div>
+    <div class="step"><span class="arrow">③</span><span>Configure <b>application.properties</b> with DB connection details</span></div>
+    <div class="step"><span class="arrow">④</span><span>Create <b>Entity class</b> annotated with <code>@Entity</code></span></div>
+    <div class="step"><span class="arrow">⑤</span><span>Create <b>Repository interface</b> extending JpaRepository</span></div>
+    <div class="step"><span class="arrow">⑥</span><span>Create <b>Service class</b> that uses the repository</span></div>
+    <div class="step"><span class="arrow">⑦</span><span>Use <b>CommandLineRunner</b> or Controller to test</span></div>
+  </div>
+
+  <h3 class="sub">Step 1 — Add Dependencies (pom.xml)</h3>
+<pre class="solo"><span class="lang-label">XML — pom.xml</span><span class="tg">&lt;dependency&gt;</span>
+    <span class="tg">&lt;groupId&gt;</span>org.springframework.boot<span class="tg">&lt;/groupId&gt;</span>
+    <span class="tg">&lt;artifactId&gt;</span>spring-boot-starter-data-jpa<span class="tg">&lt;/artifactId&gt;</span>
+<span class="tg">&lt;/dependency&gt;</span>
+
+<span class="tg">&lt;dependency&gt;</span>
+    <span class="tg">&lt;groupId&gt;</span>com.mysql<span class="tg">&lt;/groupId&gt;</span>
+    <span class="tg">&lt;artifactId&gt;</span>mysql-connector-j<span class="tg">&lt;/artifactId&gt;</span>
+    <span class="tg">&lt;scope&gt;</span>runtime<span class="tg">&lt;/scope&gt;</span>
+<span class="tg">&lt;/dependency&gt;</span></pre>
+
+  <h3 class="sub">Step 2 — application.properties</h3>
+<pre class="solo"><span class="lang-label">application.properties</span>spring.application.name=emp_demo
+
+<span class="cm"># Database connection</span>
+spring.datasource.url=jdbc:mysql://localhost:3306/empdb
+spring.datasource.username=root
+spring.datasource.password=root
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+<span class="cm"># Hibernate DDL — auto creates/updates tables</span>
+<span class="cm"># create      → drops and recreates tables every startup</span>
+<span class="cm"># update      → only adds new columns/tables, keeps existing data</span>
+<span class="cm"># validate    → validates schema but does not change it</span>
+<span class="cm"># none        → does nothing</span>
+spring.jpa.hibernate.ddl-auto=update
+
+<span class="cm"># MySQL dialect — tells Hibernate which SQL flavor to use</span>
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+
+<span class="cm"># Optional: print generated SQL in console</span>
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true</pre>
+
+  <div class="note-box"><strong>💡 ddl-auto values:</strong><br/>
+    Use <code>create</code> only during initial dev — it wipes data every restart.<br/>
+    Use <code>update</code> for development — preserves existing data, adds new columns.<br/>
+    Use <code>validate</code> or <code>none</code> in production — never let Hibernate modify prod schema.
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 3 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">3</div><h2>Defining Entity Class — @Entity</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    An <b>Entity</b> is a Java class that is mapped to a database table. Each instance (object) of the class represents one row in the table. Mark the class with <code>@Entity</code> and mark the primary key field with <code>@Id</code>.
+  </div>
+
+  <h3 class="sub">Employee.java — Basic Entity</h3>
+<pre class="solo"><span class="lang-label">Java</span><span class="kw">import</span> jakarta.persistence.*;
+
+@Entity                          <span class="cm">// marks class as a DB table</span>
+@Table(name = <span class="st">"employee"</span>)      <span class="cm">// optional: custom table name (default = class name)</span>
+<span class="kw">public class</span> Employee {
+
+    @Id                          <span class="cm">// primary key</span>
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  <span class="cm">// auto-increment</span>
+    <span class="kw">private int</span> eno;
+
+    @Column(name = <span class="st">"employee_name"</span>, nullable = <span class="kw">false</span>, length = 100)
+    <span class="kw">private</span> String ename;        <span class="cm">// maps to column "employee_name"</span>
+
+    @Column(nullable = <span class="kw">false</span>)
+    <span class="kw">private</span> String dept;
+
+    @Column
+    <span class="kw">private double</span> salary;
+
+    <span class="cm">// Getters and Setters</span>
+    <span class="kw">public int</span>    getEno()              { <span class="kw">return</span> eno; }
+    <span class="kw">public void</span>   setEno(<span class="kw">int</span> eno)      { <span class="kw">this</span>.eno = eno; }
+    <span class="kw">public</span> String getEname()            { <span class="kw">return</span> ename; }
+    <span class="kw">public void</span>   setEname(String e)    { <span class="kw">this</span>.ename = e; }
+    <span class="kw">public</span> String getDept()             { <span class="kw">return</span> dept; }
+    <span class="kw">public void</span>   setDept(String d)     { <span class="kw">this</span>.dept = d; }
+    <span class="kw">public double</span> getSalary()           { <span class="kw">return</span> salary; }
+    <span class="kw">public void</span>   setSalary(<span class="kw">double</span> s)  { <span class="kw">this</span>.salary = s; }
+
+    @Override
+    <span class="kw">public</span> String toString() {
+        <span class="kw">return</span> <span class="st">"Employee[eno="</span>+eno+<span class="st">", ename="</span>+ename+<span class="st">", dept="</span>+dept+<span class="st">"]"</span>;
+    }
+}</pre>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 4 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">4</div><h2>JPA Annotations Reference</h2></div>
+  <table>
+    <thead><tr><th>Annotation</th><th>Purpose</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>@Entity</code></td><td>Marks class as a JPA entity (maps to DB table)</td><td><code>@Entity public class Employee{}</code></td></tr>
+      <tr><td><code>@Table</code></td><td>Specifies custom table name</td><td><code>@Table(name="emp")</code></td></tr>
+      <tr><td><code>@Id</code></td><td>Marks field as primary key</td><td><code>@Id private int eno;</code></td></tr>
+      <tr><td><code>@GeneratedValue</code></td><td>Auto-generates primary key value</td><td><code>@GeneratedValue(strategy=GenerationType.IDENTITY)</code></td></tr>
+      <tr><td><code>@Column</code></td><td>Customizes column — name, nullable, length</td><td><code>@Column(name="emp_name", nullable=false)</code></td></tr>
+      <tr><td><code>@Transient</code></td><td>Field is NOT mapped to any column</td><td><code>@Transient private int age;</code></td></tr>
+      <tr><td><code>@OneToOne</code></td><td>One-to-One relationship between two entities</td><td><code>@OneToOne private Address address;</code></td></tr>
+      <tr><td><code>@OneToMany</code></td><td>One entity has many related entities</td><td><code>@OneToMany List&lt;Order&gt; orders;</code></td></tr>
+      <tr><td><code>@ManyToOne</code></td><td>Many entities relate to one entity</td><td><code>@ManyToOne private Department dept;</code></td></tr>
+      <tr><td><code>@ManyToMany</code></td><td>Many-to-Many relationship</td><td><code>@ManyToMany List&lt;Course&gt; courses;</code></td></tr>
+      <tr><td><code>@JoinColumn</code></td><td>Specifies foreign key column</td><td><code>@JoinColumn(name="dept_id")</code></td></tr>
+      <tr><td><code>@JoinTable</code></td><td>Defines join table for Many-to-Many</td><td><code>@JoinTable(name="student_course")</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub">@GeneratedValue Strategies</h3>
+  <table>
+    <thead><tr><th>Strategy</th><th>Behaviour</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr><td><code>IDENTITY</code></td><td>DB auto-increments (MySQL AUTO_INCREMENT)</td><td>MySQL, PostgreSQL</td></tr>
+      <tr><td><code>SEQUENCE</code></td><td>Uses DB sequence object</td><td>Oracle, PostgreSQL</td></tr>
+      <tr><td><code>AUTO</code></td><td>Hibernate picks strategy automatically</td><td>Portable apps</td></tr>
+      <tr><td><code>TABLE</code></td><td>Uses a separate table to generate IDs</td><td>Any DB (least efficient)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 5 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">5</div><h2>Entity Mapping — One-to-One</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    <b>One-to-One</b>: One record in Table A corresponds to exactly one record in Table B. Example: one Employee has one Address. The foreign key is stored in one of the two tables (owning side).
+  </div>
+
+  <div class="rel-diagram">
+    <div class="rel-row">
+      <div class="rel-box">Employee</div>
+      <div class="rel-line">────── 1:1 ──────</div>
+      <div class="rel-box b">Address</div>
+    </div>
+    <div style="text-align:center;font-size:.8rem;color:#546e5a;margin-top:8px;">
+      employee table has address_id (foreign key) → points to address table
+    </div>
+  </div>
+
+  <h3 class="sub">Address.java — Referenced Entity</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Entity
+@Table(name = <span class="st">"address"</span>)
+<span class="kw">public class</span> Address {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    <span class="kw">private int</span> aid;
+
+    @Column
+    <span class="kw">private</span> String street;
+
+    @Column
+    <span class="kw">private</span> String city;
+
+    @Column
+    <span class="kw">private</span> String pincode;
+
+    <span class="cm">// getters, setters...</span>
+}</pre>
+
+  <h3 class="sub">Employee.java — Owning Side</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Entity
+@Table(name = <span class="st">"employee"</span>)
+<span class="kw">public class</span> Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    <span class="kw">private int</span> eno;
+
+    @Column
+    <span class="kw">private</span> String ename;
+
+    <span class="cm">// @OneToOne: one Employee has one Address</span>
+    <span class="cm">// @JoinColumn: creates "address_id" FK column in employee table</span>
+    <span class="cm">// cascade = ALL: save/delete Employee also saves/deletes Address</span>
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = <span class="st">"address_id"</span>)
+    <span class="kw">private</span> Address address;
+
+    <span class="cm">// getters, setters...</span>
+}</pre>
+
+  <h3 class="sub">Repository, Service &amp; Main</h3>
+<pre class="solo"><span class="lang-label">Java — Repository</span>@Repository
+<span class="kw">public interface</span> EmployeeRepo <span class="kw">extends</span> JpaRepository&lt;Employee, Integer&gt; { }</pre>
+
+<pre class="solo"><span class="lang-label">Java — Service</span>@Service
+<span class="kw">public class</span> EmployeeService {
+
+    @Autowired <span class="kw">private</span> EmployeeRepo repo;
+
+    <span class="kw">public void</span> save(Employee e) { repo.save(e); }
+}</pre>
+
+<pre class="solo"><span class="lang-label">Java — Main / CommandLineRunner</span>@SpringBootApplication
+<span class="kw">public class</span> App {
+
+    <span class="kw">public static void</span> main(String[] args) {
+        SpringApplication.run(App.<span class="kw">class</span>, args);
+    }
+
+    @Bean
+    CommandLineRunner run(EmployeeService service) {
+        <span class="kw">return</span> args -&gt; {
+            Address addr = <span class="kw">new</span> Address();
+            addr.setStreet(<span class="st">"Anna Nagar"</span>);
+            addr.setCity(<span class="st">"Chennai"</span>);
+            addr.setPincode(<span class="st">"600040"</span>);
+
+            Employee e = <span class="kw">new</span> Employee();
+            e.setEname(<span class="st">"Alice"</span>);
+            e.setAddress(addr);         <span class="cm">// assign address to employee</span>
+
+            service.save(e);
+            <span class="cm">// Spring saves BOTH employee AND address (cascade = ALL)</span>
+        };
+    }
+}</pre>
+
+  <div class="note-box"><strong>💡 CascadeType.ALL</strong> means any operation on Employee (save, delete, update) is automatically cascaded to Address. If you delete Employee, Address is also deleted.</div>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 6 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">6</div><h2>Entity Mapping — One-to-Many &amp; Many-to-One</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    <b>One-to-Many</b>: One Department has many Employees. <br/>
+    <b>Many-to-One</b>: Many Employees belong to one Department.<br/>
+    These are two sides of the same relationship. The FK <code>dept_id</code> lives in the <b>employee</b> table (many side).
+  </div>
+
+  <div class="rel-diagram">
+    <div class="rel-row">
+      <div class="rel-box">Department (One)</div>
+      <div class="rel-line">────── 1:N ──────</div>
+      <div class="rel-box b">Employee (Many)</div>
+    </div>
+    <div style="text-align:center;font-size:.8rem;color:#546e5a;margin-top:8px;">
+      employee table has dept_id (foreign key) → points to department table
+    </div>
+  </div>
+
+  <h3 class="sub">Department.java — One Side</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Entity
+<span class="kw">public class</span> Department {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    <span class="kw">private int</span> did;
+
+    @Column
+    <span class="kw">private</span> String dname;
+
+    <span class="cm">// One Department has MANY Employees</span>
+    <span class="cm">// mappedBy = "dept" → refers to the field name in Employee class</span>
+    <span class="cm">// cascade = ALL → save dept also saves all its employees</span>
+    <span class="cm">// fetch = LAZY  → employees loaded only when accessed (better performance)</span>
+    @OneToMany(mappedBy = <span class="st">"dept"</span>, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    <span class="kw">private</span> List&lt;Employee&gt; employees = <span class="kw">new</span> ArrayList&lt;&gt;();
+
+    <span class="cm">// getters, setters...</span>
+}</pre>
+
+  <h3 class="sub">Employee.java — Many Side (owns the FK)</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Entity
+<span class="kw">public class</span> Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    <span class="kw">private int</span> eno;
+
+    @Column
+    <span class="kw">private</span> String ename;
+
+    <span class="cm">// Many Employees belong to ONE Department</span>
+    <span class="cm">// @JoinColumn: creates "dept_id" FK column in employee table</span>
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = <span class="st">"dept_id"</span>)
+    <span class="kw">private</span> Department dept;
+
+    <span class="cm">// getters, setters...</span>
+}</pre>
+
+  <h3 class="sub">Usage — CommandLineRunner</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Bean
+CommandLineRunner run(DepartmentRepo deptRepo) {
+    <span class="kw">return</span> args -&gt; {
+        Department d = <span class="kw">new</span> Department();
+        d.setDname(<span class="st">"Engineering"</span>);
+
+        Employee e1 = <span class="kw">new</span> Employee(); e1.setEname(<span class="st">"Alice"</span>); e1.setDept(d);
+        Employee e2 = <span class="kw">new</span> Employee(); e2.setEname(<span class="st">"Bob"</span>);   e2.setDept(d);
+
+        d.setEmployees(Arrays.asList(e1, e2));
+
+        deptRepo.save(d);  <span class="cm">// saves dept + e1 + e2 (cascade)</span>
+    };
+}</pre>
+
+  <table>
+    <thead><tr><th>FetchType</th><th>When data is loaded</th><th>Default for</th></tr></thead>
+    <tbody>
+      <tr><td><code>LAZY</code></td><td>Only when field is accessed in code</td><td>@OneToMany, @ManyToMany</td></tr>
+      <tr><td><code>EAGER</code></td><td>Immediately when parent is loaded</td><td>@ManyToOne, @OneToOne</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 7 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">7</div><h2>Entity Mapping — Many-to-Many</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    <b>Many-to-Many</b>: One Student can enroll in many Courses. One Course can have many Students. A <b>join table</b> (student_course) is created automatically to hold the relationship.
+  </div>
+
+  <div class="rel-diagram">
+    <div class="rel-row">
+      <div class="rel-box">Student</div>
+      <div class="rel-line">──── M:N ────</div>
+      <div class="rel-box b">Course</div>
+    </div>
+    <div style="text-align:center;font-size:.8rem;color:#546e5a;margin-top:8px;">
+      join table: student_course (student_id, course_id)
+    </div>
+  </div>
+
+  <h3 class="sub">Student.java — Owning Side</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Entity
+<span class="kw">public class</span> Student {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    <span class="kw">private int</span> sid;
+
+    @Column
+    <span class="kw">private</span> String sname;
+
+    <span class="cm">// @ManyToMany: student ↔ course</span>
+    <span class="cm">// @JoinTable: defines the join table name and FK columns</span>
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(
+        name = <span class="st">"student_course"</span>,                          <span class="cm">// join table name</span>
+        joinColumns = @JoinColumn(name = <span class="st">"student_id"</span>),   <span class="cm">// FK for Student</span>
+        inverseJoinColumns = @JoinColumn(name = <span class="st">"course_id"</span>) <span class="cm">// FK for Course</span>
+    )
+    <span class="kw">private</span> List&lt;Course&gt; courses = <span class="kw">new</span> ArrayList&lt;&gt;();
+
+    <span class="cm">// getters, setters...</span>
+}</pre>
+
+  <h3 class="sub">Course.java — Inverse Side</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Entity
+<span class="kw">public class</span> Course {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    <span class="kw">private int</span> cid;
+
+    @Column
+    <span class="kw">private</span> String cname;
+
+    <span class="cm">// mappedBy = "courses" → refers to field name in Student class</span>
+    <span class="cm">// Inverse side — does not own the join table</span>
+    @ManyToMany(mappedBy = <span class="st">"courses"</span>)
+    <span class="kw">private</span> List&lt;Student&gt; students = <span class="kw">new</span> ArrayList&lt;&gt;();
+
+    <span class="cm">// getters, setters...</span>
+}</pre>
+
+  <h3 class="sub">Usage</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Bean
+CommandLineRunner run(StudentRepo studentRepo) {
+    <span class="kw">return</span> args -&gt; {
+        Course c1 = <span class="kw">new</span> Course(); c1.setCname(<span class="st">"Java"</span>);
+        Course c2 = <span class="kw">new</span> Course(); c2.setCname(<span class="st">"Spring"</span>);
+
+        Student s = <span class="kw">new</span> Student();
+        s.setSname(<span class="st">"Alice"</span>);
+        s.setCourses(Arrays.asList(c1, c2));
+
+        studentRepo.save(s);
+        <span class="cm">// Creates: student row, course rows, student_course rows</span>
+    };
+}</pre>
+
+  <table>
+    <thead><tr><th>Mapping Type</th><th>Tables Involved</th><th>FK Location</th></tr></thead>
+    <tbody>
+      <tr><td>One-to-One</td><td>2 tables</td><td>FK in owning side table</td></tr>
+      <tr><td>One-to-Many / Many-to-One</td><td>2 tables</td><td>FK in "many" side table</td></tr>
+      <tr><td>Many-to-Many</td><td>3 tables (+ join table)</td><td>Join table holds both FKs</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 8 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">8</div><h2>CrudRepository</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    <code>CrudRepository</code> is the most basic Spring Data repository interface. It provides standard CRUD operations automatically — no implementation needed. You just declare the interface and Spring generates the implementation at runtime.
+  </div>
+
+  <h3 class="sub">Declaring a CrudRepository</h3>
+<pre class="solo"><span class="lang-label">Java</span><span class="kw">import</span> org.springframework.data.repository.CrudRepository;
+
+<span class="cm">// CrudRepository&lt;EntityClass, PrimaryKeyType&gt;</span>
+@Repository
+<span class="kw">public interface</span> EmployeeRepo <span class="kw">extends</span> CrudRepository&lt;Employee, Integer&gt; {
+    <span class="cm">// No code needed — Spring provides all basic CRUD methods</span>
+}</pre>
+
+  <h3 class="sub">Built-in Methods from CrudRepository</h3>
+<pre class="solo"><span class="lang-label">Java — Service using CrudRepository</span>@Service
+<span class="kw">public class</span> EmployeeService {
+
+    @Autowired <span class="kw">private</span> EmployeeRepo repo;
+
+    <span class="cm">// INSERT or UPDATE (if id exists → update, else → insert)</span>
+    <span class="kw">public void</span> save(Employee e)          { repo.save(e); }
+
+    <span class="cm">// SELECT by id — returns Optional (may or may not have value)</span>
+    <span class="kw">public</span> Optional&lt;Employee&gt; findById(<span class="kw">int</span> id) { <span class="kw">return</span> repo.findById(id); }
+
+    <span class="cm">// SELECT all rows</span>
+    <span class="kw">public</span> Iterable&lt;Employee&gt; findAll()  { <span class="kw">return</span> repo.findAll(); }
+
+    <span class="cm">// DELETE by id</span>
+    <span class="kw">public void</span> deleteById(<span class="kw">int</span> id)       { repo.deleteById(id); }
+
+    <span class="cm">// DELETE object</span>
+    <span class="kw">public void</span> delete(Employee e)        { repo.delete(e); }
+
+    <span class="cm">// COUNT all rows</span>
+    <span class="kw">public long</span> count()                   { <span class="kw">return</span> repo.count(); }
+
+    <span class="cm">// CHECK if id exists</span>
+    <span class="kw">public boolean</span> exists(<span class="kw">int</span> id)         { <span class="kw">return</span> repo.existsById(id); }
+
+    <span class="cm">// SAVE multiple at once</span>
+    <span class="kw">public void</span> saveAll(List&lt;Employee&gt; list) { repo.saveAll(list); }
+}</pre>
+
+  <table>
+    <thead><tr><th>Method</th><th>SQL Equivalent</th><th>Returns</th></tr></thead>
+    <tbody>
+      <tr><td><code>save(entity)</code></td><td>INSERT or UPDATE</td><td>Saved entity</td></tr>
+      <tr><td><code>saveAll(list)</code></td><td>Multiple INSERT/UPDATE</td><td>Iterable of saved entities</td></tr>
+      <tr><td><code>findById(id)</code></td><td>SELECT WHERE id=?</td><td>Optional&lt;T&gt;</td></tr>
+      <tr><td><code>findAll()</code></td><td>SELECT *</td><td>Iterable&lt;T&gt;</td></tr>
+      <tr><td><code>existsById(id)</code></td><td>SELECT COUNT WHERE id=?</td><td>boolean</td></tr>
+      <tr><td><code>count()</code></td><td>SELECT COUNT(*)</td><td>long</td></tr>
+      <tr><td><code>deleteById(id)</code></td><td>DELETE WHERE id=?</td><td>void</td></tr>
+      <tr><td><code>delete(entity)</code></td><td>DELETE WHERE id=entity.id</td><td>void</td></tr>
+      <tr><td><code>deleteAll()</code></td><td>DELETE all rows</td><td>void</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 9 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">9</div><h2>JpaRepository</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    <code>JpaRepository</code> extends <code>CrudRepository</code> and adds more powerful methods — pagination, sorting, flushing, and batch operations. <b>This is the most commonly used repository interface in Spring Data JPA.</b>
+  </div>
+
+  <h3 class="sub">JpaRepository Declaration</h3>
+<pre class="solo"><span class="lang-label">Java</span><span class="kw">import</span> org.springframework.data.jpa.repository.JpaRepository;
+
+<span class="cm">// JpaRepository&lt;EntityClass, PrimaryKeyType&gt;</span>
+@Repository
+<span class="kw">public interface</span> EmployeeRepo <span class="kw">extends</span> JpaRepository&lt;Employee, Integer&gt; {
+    <span class="cm">// Spring generates all implementation automatically</span>
+}</pre>
+
+  <h3 class="sub">Extra Methods in JpaRepository (beyond CrudRepository)</h3>
+<pre class="solo"><span class="lang-label">Java — Service using JpaRepository</span>@Service
+<span class="kw">public class</span> EmployeeService {
+
+    @Autowired <span class="kw">private</span> EmployeeRepo repo;
+
+    <span class="cm">// findAll with Sorting</span>
+    <span class="kw">public</span> List&lt;Employee&gt; findAllSorted() {
+        <span class="kw">return</span> repo.findAll(Sort.by(<span class="st">"ename"</span>).ascending());
+    }
+
+    <span class="cm">// findAll with Pagination</span>
+    <span class="kw">public</span> Page&lt;Employee&gt; findByPage(<span class="kw">int</span> pageNo, <span class="kw">int</span> pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        <span class="kw">return</span> repo.findAll(pageable);
+    }
+
+    <span class="cm">// findAll with Pagination + Sorting</span>
+    <span class="kw">public</span> Page&lt;Employee&gt; findSortedPage(<span class="kw">int</span> pageNo, <span class="kw">int</span> pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize,
+                                Sort.by(<span class="st">"salary"</span>).descending());
+        <span class="kw">return</span> repo.findAll(pageable);
+    }
+
+    <span class="cm">// flush — force pending changes to DB immediately</span>
+    <span class="kw">public void</span> flushChanges() { repo.flush(); }
+
+    <span class="cm">// saveAndFlush — save + flush in one call</span>
+    <span class="kw">public</span> Employee saveNow(Employee e) { <span class="kw">return</span> repo.saveAndFlush(e); }
+}</pre>
+
+  <table>
+    <thead><tr><th>Feature</th><th>CrudRepository</th><th>JpaRepository</th></tr></thead>
+    <tbody>
+      <tr><td>Basic CRUD</td><td class="check">✅</td><td class="check">✅</td></tr>
+      <tr><td>findAll() returns List</td><td class="cross">❌ Returns Iterable</td><td class="check">✅ Returns List</td></tr>
+      <tr><td>Pagination</td><td class="cross">❌</td><td class="check">✅ findAll(Pageable)</td></tr>
+      <tr><td>Sorting</td><td class="cross">❌</td><td class="check">✅ findAll(Sort)</td></tr>
+      <tr><td>flush / saveAndFlush</td><td class="cross">❌</td><td class="check">✅</td></tr>
+      <tr><td>deleteAllInBatch</td><td class="cross">❌</td><td class="check">✅ Faster batch delete</td></tr>
+      <tr><td>Recommended</td><td>For simple apps</td><td class="check">✅ Use this by default</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 10 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">10</div><h2>Custom Query Methods (Derived Queries)</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    Spring Data JPA can automatically generate SQL from method names in your repository interface. Just follow the naming convention — Spring parses the method name and creates the query.
+  </div>
+
+<pre class="solo"><span class="lang-label">Java — EmployeeRepo.java</span>@Repository
+<span class="kw">public interface</span> EmployeeRepo <span class="kw">extends</span> JpaRepository&lt;Employee, Integer&gt; {
+
+    <span class="cm">// SELECT * FROM employee WHERE ename = ?</span>
+    List&lt;Employee&gt; findByEname(String ename);
+
+    <span class="cm">// SELECT * FROM employee WHERE dept = ?</span>
+    List&lt;Employee&gt; findByDept(String dept);
+
+    <span class="cm">// SELECT * FROM employee WHERE salary > ?</span>
+    List&lt;Employee&gt; findBySalaryGreaterThan(<span class="kw">double</span> salary);
+
+    <span class="cm">// SELECT * FROM employee WHERE salary BETWEEN ? AND ?</span>
+    List&lt;Employee&gt; findBySalaryBetween(<span class="kw">double</span> min, <span class="kw">double</span> max);
+
+    <span class="cm">// SELECT * FROM employee WHERE ename LIKE '%?%'</span>
+    List&lt;Employee&gt; findByEnameContaining(String keyword);
+
+    <span class="cm">// SELECT * FROM employee WHERE dept = ? AND salary > ?</span>
+    List&lt;Employee&gt; findByDeptAndSalaryGreaterThan(String dept, <span class="kw">double</span> salary);
+
+    <span class="cm">// SELECT * FROM employee WHERE ename = ? OR dept = ?</span>
+    List&lt;Employee&gt; findByEnameOrDept(String ename, String dept);
+
+    <span class="cm">// SELECT * FROM employee ORDER BY salary DESC</span>
+    List&lt;Employee&gt; findAllByOrderBySalaryDesc();
+
+    <span class="cm">// SELECT COUNT(*) FROM employee WHERE dept = ?</span>
+    <span class="kw">long</span> countByDept(String dept);
+
+    <span class="cm">// DELETE FROM employee WHERE dept = ?</span>
+    <span class="kw">void</span> deleteByDept(String dept);
+}</pre>
+
+  <table>
+    <thead><tr><th>Keyword</th><th>SQL Equivalent</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><code>findBy</code></td><td>WHERE</td><td><code>findByEname(name)</code></td></tr>
+      <tr><td><code>And</code></td><td>AND</td><td><code>findByDeptAndSalary(...)</code></td></tr>
+      <tr><td><code>Or</code></td><td>OR</td><td><code>findByEnameOrDept(...)</code></td></tr>
+      <tr><td><code>GreaterThan</code></td><td>&gt;</td><td><code>findBySalaryGreaterThan(n)</code></td></tr>
+      <tr><td><code>LessThan</code></td><td>&lt;</td><td><code>findBySalaryLessThan(n)</code></td></tr>
+      <tr><td><code>Between</code></td><td>BETWEEN</td><td><code>findBySalaryBetween(a,b)</code></td></tr>
+      <tr><td><code>Like / Containing</code></td><td>LIKE '%x%'</td><td><code>findByEnameContaining(s)</code></td></tr>
+      <tr><td><code>OrderBy...Asc/Desc</code></td><td>ORDER BY</td><td><code>findAllByOrderBySalaryDesc()</code></td></tr>
+      <tr><td><code>countBy</code></td><td>COUNT WHERE</td><td><code>countByDept(dept)</code></td></tr>
+      <tr><td><code>deleteBy</code></td><td>DELETE WHERE</td><td><code>deleteByDept(dept)</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 11 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">11</div><h2>JPQL — Java Persistence Query Language</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    <b>JPQL</b> is a query language similar to SQL, but instead of table/column names, you use <b>Java class and field names</b>. Hibernate translates JPQL to the actual SQL for your database. Use <code>@Query</code> annotation to write JPQL in your repository.
+  </div>
+
+  <div class="note-box"><strong>💡 JPQL vs SQL:</strong><br/>
+    SQL: <code>SELECT * FROM employee WHERE dept = 'IT'</code><br/>
+    JPQL: <code>SELECT e FROM Employee e WHERE e.dept = 'IT'</code><br/>
+    JPQL uses class name <code>Employee</code> (not table name) and field name <code>e.dept</code> (not column name).
+  </div>
+
+<pre class="solo"><span class="lang-label">Java — EmployeeRepo.java with @Query (JPQL)</span>@Repository
+<span class="kw">public interface</span> EmployeeRepo <span class="kw">extends</span> JpaRepository&lt;Employee, Integer&gt; {
+
+    <span class="cm">// Basic JPQL — SELECT all by department</span>
+    @Query(<span class="st">"SELECT e FROM Employee e WHERE e.dept = :dept"</span>)
+    List&lt;Employee&gt; findByDeptJPQL(@Param(<span class="st">"dept"</span>) String dept);
+
+    <span class="cm">// JPQL with multiple conditions</span>
+    @Query(<span class="st">"SELECT e FROM Employee e WHERE e.dept = :dept AND e.salary > :sal"</span>)
+    List&lt;Employee&gt; findByDeptAndSalary(@Param(<span class="st">"dept"</span>) String dept,
+                                       @Param(<span class="st">"sal"</span>) <span class="kw">double</span> sal);
+
+    <span class="cm">// JPQL with ORDER BY</span>
+    @Query(<span class="st">"SELECT e FROM Employee e ORDER BY e.salary DESC"</span>)
+    List&lt;Employee&gt; findAllOrderedBySalary();
+
+    <span class="cm">// JPQL — SELECT specific fields only</span>
+    @Query(<span class="st">"SELECT e.ename, e.dept FROM Employee e WHERE e.salary > :sal"</span>)
+    List&lt;Object[]&gt; findNamesAndDepts(@Param(<span class="st">"sal"</span>) <span class="kw">double</span> sal);
+
+    <span class="cm">// JPQL — COUNT</span>
+    @Query(<span class="st">"SELECT COUNT(e) FROM Employee e WHERE e.dept = :dept"</span>)
+    <span class="kw">long</span> countByDeptJPQL(@Param(<span class="st">"dept"</span>) String dept);
+
+    <span class="cm">// JPQL — UPDATE (must use @Modifying + @Transactional)</span>
+    @Modifying
+    @Transactional
+    @Query(<span class="st">"UPDATE Employee e SET e.salary = e.salary * 1.1 WHERE e.dept = :dept"</span>)
+    <span class="kw">int</span> incrementSalary(@Param(<span class="st">"dept"</span>) String dept);
+
+    <span class="cm">// JPQL — DELETE</span>
+    @Modifying
+    @Transactional
+    @Query(<span class="st">"DELETE FROM Employee e WHERE e.dept = :dept"</span>)
+    <span class="kw">void</span> deleteByDeptJPQL(@Param(<span class="st">"dept"</span>) String dept);
+
+    <span class="cm">// Native SQL Query — use actual table/column names</span>
+    @Query(value = <span class="st">"SELECT * FROM employee WHERE dept = :dept"</span>,
+           nativeQuery = <span class="kw">true</span>)
+    List&lt;Employee&gt; findByDeptNative(@Param(<span class="st">"dept"</span>) String dept);
+}</pre>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Derived Query</th><th>JPQL @Query</th><th>Native @Query</th></tr></thead>
+    <tbody>
+      <tr><td>Uses</td><td>Method name</td><td>Java class/field names</td><td>Actual SQL / table names</td></tr>
+      <tr><td>Complexity</td><td>Simple only</td><td>Medium-complex</td><td>Any SQL</td></tr>
+      <tr><td>DB portable</td><td class="check">✅ Yes</td><td class="check">✅ Yes</td><td class="cross">❌ DB-specific</td></tr>
+      <tr><td>UPDATE/DELETE</td><td class="cross">❌</td><td class="check">✅ with @Modifying</td><td class="check">✅ with @Modifying</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 12 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">12</div><h2>Criteria Query</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    <b>Criteria Query</b> is a programmatic, type-safe way to build queries using Java code instead of query strings. It is part of the JPA specification and uses <code>CriteriaBuilder</code> and <code>CriteriaQuery</code> API. Useful when queries are built dynamically at runtime.
+  </div>
+
+  <div class="note-box"><strong>💡 When to use Criteria Query?</strong><br/>
+    When the query conditions are unknown until runtime — e.g., a search filter form where the user may or may not fill in dept, salary, ename. With JPQL you'd need multiple queries; with Criteria API you build one query dynamically.
+  </div>
+
+  <h3 class="sub">EmployeeService.java — Criteria Query Examples</h3>
+<pre class="solo"><span class="lang-label">Java</span>@Service
+<span class="kw">public class</span> EmployeeService {
+
+    @PersistenceContext
+    <span class="kw">private</span> EntityManager em;  <span class="cm">// JPA's main interface for DB operations</span>
+
+    <span class="cm">// ── Find all employees ──────────────────────────────────────────────</span>
+    <span class="kw">public</span> List&lt;Employee&gt; findAll() {
+        CriteriaBuilder   cb = em.getCriteriaBuilder();
+        CriteriaQuery&lt;Employee&gt; cq = cb.createQuery(Employee.<span class="kw">class</span>);
+        Root&lt;Employee&gt;    root = cq.from(Employee.<span class="kw">class</span>);  <span class="cm">// FROM employee</span>
+
+        cq.select(root);   <span class="cm">// SELECT *</span>
+
+        <span class="kw">return</span> em.createQuery(cq).getResultList();
+    }
+
+    <span class="cm">// ── Find by department ──────────────────────────────────────────────</span>
+    <span class="kw">public</span> List&lt;Employee&gt; findByDept(String dept) {
+        CriteriaBuilder   cb   = em.getCriteriaBuilder();
+        CriteriaQuery&lt;Employee&gt; cq = cb.createQuery(Employee.<span class="kw">class</span>);
+        Root&lt;Employee&gt;    root = cq.from(Employee.<span class="kw">class</span>);
+
+        <span class="cm">// WHERE e.dept = :dept</span>
+        Predicate deptPredicate = cb.equal(root.get(<span class="st">"dept"</span>), dept);
+        cq.select(root).where(deptPredicate);
+
+        <span class="kw">return</span> em.createQuery(cq).getResultList();
+    }
+
+    <span class="cm">// ── Dynamic query — multiple optional filters ─────────────────────</span>
+    <span class="kw">public</span> List&lt;Employee&gt; search(String dept, Double minSalary, String ename) {
+        CriteriaBuilder   cb   = em.getCriteriaBuilder();
+        CriteriaQuery&lt;Employee&gt; cq = cb.createQuery(Employee.<span class="kw">class</span>);
+        Root&lt;Employee&gt;    root = cq.from(Employee.<span class="kw">class</span>);
+
+        List&lt;Predicate&gt; predicates = <span class="kw">new</span> ArrayList&lt;&gt;();
+
+        <span class="kw">if</span> (dept != <span class="kw">null</span>)
+            predicates.add(cb.equal(root.get(<span class="st">"dept"</span>), dept));
+
+        <span class="kw">if</span> (minSalary != <span class="kw">null</span>)
+            predicates.add(cb.greaterThan(root.get(<span class="st">"salary"</span>), minSalary));
+
+        <span class="kw">if</span> (ename != <span class="kw">null</span>)
+            predicates.add(cb.like(root.get(<span class="st">"ename"</span>), <span class="st">"%"</span> + ename + <span class="st">"%"</span>));
+
+        cq.select(root).where(cb.and(predicates.toArray(<span class="kw">new</span> Predicate[0])));
+
+        <span class="kw">return</span> em.createQuery(cq).getResultList();
+    }
+
+    <span class="cm">// ── ORDER BY salary DESC ─────────────────────────────────────────</span>
+    <span class="kw">public</span> List&lt;Employee&gt; findAllOrderedBySalary() {
+        CriteriaBuilder   cb   = em.getCriteriaBuilder();
+        CriteriaQuery&lt;Employee&gt; cq = cb.createQuery(Employee.<span class="kw">class</span>);
+        Root&lt;Employee&gt;    root = cq.from(Employee.<span class="kw">class</span>);
+
+        cq.select(root).orderBy(cb.desc(root.get(<span class="st">"salary"</span>)));
+
+        <span class="kw">return</span> em.createQuery(cq).getResultList();
+    }
+}</pre>
+
+  <table>
+    <thead><tr><th>CriteriaBuilder Method</th><th>SQL Equivalent</th></tr></thead>
+    <tbody>
+      <tr><td><code>cb.equal(root.get("field"), val)</code></td><td>WHERE field = val</td></tr>
+      <tr><td><code>cb.greaterThan(root.get("field"), val)</code></td><td>WHERE field &gt; val</td></tr>
+      <tr><td><code>cb.lessThan(root.get("field"), val)</code></td><td>WHERE field &lt; val</td></tr>
+      <tr><td><code>cb.like(root.get("field"), "%x%")</code></td><td>WHERE field LIKE '%x%'</td></tr>
+      <tr><td><code>cb.between(root.get("f"), a, b)</code></td><td>WHERE field BETWEEN a AND b</td></tr>
+      <tr><td><code>cb.and(p1, p2)</code></td><td>WHERE p1 AND p2</td></tr>
+      <tr><td><code>cb.or(p1, p2)</code></td><td>WHERE p1 OR p2</td></tr>
+      <tr><td><code>cb.not(predicate)</code></td><td>WHERE NOT predicate</td></tr>
+      <tr><td><code>cq.orderBy(cb.asc(root.get("f")))</code></td><td>ORDER BY field ASC</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ SEC 13 -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">13</div><h2>Spring Data JPA &amp; Transactions</h2></div>
+  <div class="def-box"><strong>Definition</strong>
+    Spring Data JPA integrates with Spring's transaction management. Repository methods like <code>save()</code> and <code>delete()</code> are already transactional by default. For custom business logic involving multiple operations, use <code>@Transactional</code> on service methods.
+  </div>
+
+  <div class="note-box"><strong>💡 Default behaviour:</strong> All Spring Data JPA repository methods (save, delete, findAll etc.) are already wrapped in transactions automatically — you don't need to add @Transactional on them. You only add it on your own service methods that do multiple operations.</div>
+
+  <h3 class="sub">Setup in application.properties</h3>
+<pre class="solo"><span class="lang-label">application.properties</span><span class="cm"># Spring Boot auto-configures JpaTransactionManager — no extra setup needed!</span>
+spring.datasource.url=jdbc:mysql://localhost:3306/empdb
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.hibernate.ddl-auto=update</pre>
+
+  <h3 class="sub">Service — @Transactional on Multi-Step Operations</h3>
+<pre class="solo"><span class="lang-label">Java — EmployeeService.java</span>@Service
+<span class="kw">public class</span> EmployeeService {
+
+    @Autowired <span class="kw">private</span> EmployeeRepo  empRepo;
+    @Autowired <span class="kw">private</span> DepartmentRepo deptRepo;
+
+    <span class="cm">// ── Single operation — already transactional via JPA ────────────────</span>
+    <span class="kw">public void</span> insert(Employee e) {
+        empRepo.save(e);   <span class="cm">// no @Transactional needed — save() handles it</span>
+    }
+
+    <span class="cm">// ── Multi-step operation — needs @Transactional ──────────────────────</span>
+    @Transactional
+    <span class="kw">public void</span> transferEmployee(<span class="kw">int</span> empId, <span class="kw">int</span> newDeptId) {
+        Employee e    = empRepo.findById(empId)
+                               .orElseThrow(() -&gt; <span class="kw">new</span> RuntimeException(<span class="st">"Not found"</span>));
+        Department d  = deptRepo.findById(newDeptId)
+                                .orElseThrow(() -&gt; <span class="kw">new</span> RuntimeException(<span class="st">"Not found"</span>));
+        e.setDept(d.getDname());
+        empRepo.save(e);
+        <span class="cm">// if exception thrown here → empRepo.save() is rolled back</span>
+    }
+
+    <span class="cm">// ── Read-only transaction — optimization ──────────────────────────────</span>
+    @Transactional(readOnly = <span class="kw">true</span>)
+    <span class="kw">public</span> List&lt;Employee&gt; getAll() {
+        <span class="kw">return</span> empRepo.findAll();
+    }
+
+    <span class="cm">// ── Rollback on checked exception ────────────────────────────────────</span>
+    @Transactional(rollbackFor = Exception.<span class="kw">class</span>)
+    <span class="kw">public void</span> complexOperation(Employee e) <span class="kw">throws</span> Exception {
+        empRepo.save(e);
+        <span class="kw">if</span> (e.getSalary() &lt; 0)
+            <span class="kw">throw new</span> Exception(<span class="st">"Invalid salary"</span>);  <span class="cm">// triggers rollback</span>
+    }
+
+    <span class="cm">// ── @Transactional with JPQL @Modifying ──────────────────────────────</span>
+    @Transactional
+    <span class="kw">public void</span> giveRaise(String dept) {
+        empRepo.incrementSalary(dept);  <span class="cm">// calls @Modifying @Query method</span>
+    }
+}</pre>
+
+  <div class="warn-box"><strong>⚠ Important rules:</strong><br/>
+    1. Always put <code>@Transactional</code> on <b>service layer</b> methods — not on repository or controller.<br/>
+    2. <code>@Modifying</code> queries in repository MUST have <code>@Transactional</code>.<br/>
+    3. Spring only rolls back on <b>RuntimeException</b> by default. Use <code>rollbackFor=Exception.class</code> for checked exceptions.
+  </div>
+
+  <h3 class="sub">Transaction Flow Diagram</h3>
+  <div class="flow">
+    <div class="step"><span class="arrow">①</span><span>Service method called → Spring begins transaction</span></div>
+    <div class="step"><span class="arrow">②</span><span>Repository save() / delete() / update() operations execute</span></div>
+    <div class="step"><span class="arrow">③a</span><span>All succeed → Spring commits → data permanently saved in DB</span></div>
+    <div class="step"><span class="arrow">③b</span><span>RuntimeException thrown → Spring rolls back → DB unchanged</span></div>
+    <div class="step"><span class="arrow">④</span><span>Transaction ends</span></div>
+  </div>
+
+  <table>
+    <thead><tr><th>Scenario</th><th>@Transactional needed?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Single save()</td><td class="cross">❌ Not needed</td><td>JPA repo methods are already transactional</td></tr>
+      <tr><td>Multiple saves in one method</td><td class="check">✅ Yes</td><td>Groups all operations in one atomic transaction</td></tr>
+      <tr><td>@Modifying @Query</td><td class="check">✅ Yes</td><td>UPDATE/DELETE queries require an active transaction</td></tr>
+      <tr><td>Read-only findAll()</td><td>Optional (readOnly=true)</td><td>Optimizes DB performance for reads</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<hr class="divider"/>
+
+<!-- ══════════════════════════════ INTERVIEW Q&A -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">14</div><h2>Interview Questions &amp; Answers</h2></div>
+
+  <h3 class="sub">Q1. What is the difference between JPA, Hibernate, and Spring Data JPA?</h3>
+  <div class="def-box"><strong>Answer</strong> JPA is a specification (interface/rules). Hibernate is the implementation of JPA that does the actual work. Spring Data JPA is a Spring module that builds on top of JPA/Hibernate and provides ready-made repository interfaces, eliminating most boilerplate. You use Spring Data JPA → it delegates to JPA → Hibernate executes the SQL.</div>
+
+  <h3 class="sub">Q2. What is @Entity and what are the mandatory requirements for an Entity class?</h3>
+  <div class="def-box"><strong>Answer</strong> @Entity marks a Java class as a DB table. Mandatory requirements: (1) @Entity annotation on the class, (2) @Id annotation on the primary key field, (3) a no-argument constructor (can be default). Optional: @Table to set custom table name, @Column to customize column properties.</div>
+
+  <h3 class="sub">Q3. What is ddl-auto and what are its values?</h3>
+  <div class="def-box"><strong>Answer</strong> ddl-auto controls how Hibernate manages DB schema. Values: create (drop + recreate tables each startup — wipes data), update (add new columns/tables, keep existing data — for dev), validate (check schema matches entity, no changes), none (do nothing — for prod). Always use validate or none in production.</div>
+
+  <h3 class="sub">Q4. What is the difference between CrudRepository and JpaRepository?</h3>
+  <div class="def-box"><strong>Answer</strong> CrudRepository provides basic CRUD methods, findAll() returns Iterable. JpaRepository extends CrudRepository and adds pagination (findAll(Pageable)), sorting (findAll(Sort)), flush(), saveAndFlush(), batch operations, and findAll() returns List. JpaRepository is recommended in most projects.</div>
+
+  <h3 class="sub">Q5. What are derived query methods in Spring Data JPA?</h3>
+  <div class="def-box"><strong>Answer</strong> Derived queries are repository methods whose SQL is generated automatically by Spring based on the method name. For example, findByEname(String ename) generates SELECT * FROM employee WHERE ename=?. Keywords like And, Or, GreaterThan, Between, Containing, OrderBy are supported. For complex queries, use @Query with JPQL.</div>
+
+  <h3 class="sub">Q6. What is JPQL? How is it different from SQL?</h3>
+  <div class="def-box"><strong>Answer</strong> JPQL (Java Persistence Query Language) uses Java class and field names instead of DB table and column names. SQL: SELECT * FROM employee WHERE dept='IT'. JPQL: SELECT e FROM Employee e WHERE e.dept='IT'. JPQL is DB-independent — Hibernate translates it to the correct SQL for the target database. Use @Query on repository methods to write JPQL.</div>
+
+  <h3 class="sub">Q7. What is @Modifying and when is it required?</h3>
+  <div class="def-box"><strong>Answer</strong> @Modifying is required on @Query methods that perform INSERT, UPDATE, or DELETE operations (not SELECT). It tells Spring Data JPA that this query modifies the database. It must be used together with @Transactional. Without @Modifying, Spring will throw an InvalidDataAccessApiUsageException.</div>
+
+  <h3 class="sub">Q8. What is the difference between One-to-One, One-to-Many, and Many-to-Many?</h3>
+  <div class="def-box"><strong>Answer</strong> One-to-One: one Employee has one Address — FK in one table. One-to-Many: one Department has many Employees — FK (dept_id) in the Employee table (many side). Many-to-Many: one Student can have many Courses and vice versa — requires a join table (student_course) holding both FKs. The @JoinTable annotation defines this join table.</div>
+
+  <h3 class="sub">Q9. What is mappedBy in @OneToMany?</h3>
+  <div class="def-box"><strong>Answer</strong> mappedBy tells JPA which side owns the relationship (holds the FK). The side with mappedBy is the inverse side — it does not own the FK column. For example, @OneToMany(mappedBy="dept") in Department means the dept field in Employee class owns the FK. Without mappedBy, JPA would create an unnecessary extra join table.</div>
+
+  <h3 class="sub">Q10. What is FetchType.LAZY vs EAGER?</h3>
+  <div class="def-box"><strong>Answer</strong> LAZY: related data is loaded only when the field is actually accessed in code — better performance, avoids loading unnecessary data. EAGER: related data is loaded immediately when the parent is loaded — simpler but can cause performance issues. Default: @OneToMany and @ManyToMany are LAZY. @ManyToOne and @OneToOne are EAGER.</div>
+
+  <h3 class="sub">Q11. What is CascadeType? Explain CascadeType.ALL.</h3>
+  <div class="def-box"><strong>Answer</strong> CascadeType defines which JPA operations on the parent entity should cascade to the child entity. CascadeType.ALL means ALL operations (save, update, delete, refresh, merge, detach) on the parent are automatically applied to the child. Example: if Employee has cascade=ALL on Address, saving Employee also saves Address; deleting Employee also deletes Address.</div>
+
+  <h3 class="sub">Q12. What is Criteria Query? When would you use it over JPQL?</h3>
+  <div class="def-box"><strong>Answer</strong> Criteria Query is a programmatic type-safe way to build queries using Java API (CriteriaBuilder, CriteriaQuery, Root, Predicate). Use it when query conditions are not known until runtime — e.g., a dynamic search form where the user may or may not fill in dept, salary, or name. JPQL requires the full query string upfront; Criteria API builds conditions dynamically in code.</div>
+
+  <h3 class="sub">Q13. When do you need @Transactional in Spring Data JPA?</h3>
+  <div class="def-box"><strong>Answer</strong> JPA repository methods (save, delete, findAll) are already transactional — no @Transactional needed on them. You need @Transactional on service methods when: (1) doing multiple DB operations that must succeed or fail together, (2) using @Modifying @Query methods, (3) doing read-heavy operations (readOnly=true for optimization). Always place @Transactional on the service layer, not repository or controller.</div>
+</div>
+
+<hr class="divider"/>
+
+<!-- CHEAT SHEET -->
+<div class="sec">
+  <div class="sec-title"><div class="sec-num">15</div><h2>Quick Reference Cheat Sheet</h2></div>
+  <div class="cheat">
+    <h3>📋 Spring Data JPA — All Key Terms</h3>
+    <table>
+      <thead><tr><th>Term</th><th>One-line Definition</th></tr></thead>
+      <tbody>
+        <tr><td>ORM</td><td>Maps Java classes to DB tables automatically</td></tr>
+        <tr><td>JPA</td><td>Java Persistence API — specification / interface only</td></tr>
+        <tr><td>Hibernate</td><td>Most popular JPA implementation used by Spring Data JPA</td></tr>
+        <tr><td>Spring Data JPA</td><td>Builds on JPA — provides ready-made repository interfaces</td></tr>
+        <tr><td>@Entity</td><td>Marks class as a DB table</td></tr>
+        <tr><td>@Table</td><td>Sets custom table name</td></tr>
+        <tr><td>@Id</td><td>Marks field as primary key</td></tr>
+        <tr><td>@GeneratedValue</td><td>Auto-generates PK — IDENTITY for MySQL auto-increment</td></tr>
+        <tr><td>@Column</td><td>Customizes column name, nullable, length</td></tr>
+        <tr><td>@Transient</td><td>Field NOT mapped to any DB column</td></tr>
+        <tr><td>ddl-auto=update</td><td>Auto adds new columns/tables — keeps existing data</td></tr>
+        <tr><td>ddl-auto=create</td><td>Drops and recreates tables every startup — wipes data</td></tr>
+        <tr><td>@OneToOne</td><td>One entity maps to exactly one of another</td></tr>
+        <tr><td>@OneToMany</td><td>One entity maps to list of another</td></tr>
+        <tr><td>@ManyToOne</td><td>Many entities point to one entity (owns FK)</td></tr>
+        <tr><td>@ManyToMany</td><td>Both sides have lists — needs join table</td></tr>
+        <tr><td>@JoinColumn</td><td>Specifies the FK column name</td></tr>
+        <tr><td>@JoinTable</td><td>Defines join table for Many-to-Many</td></tr>
+        <tr><td>mappedBy</td><td>Marks inverse side of relationship — does not own FK</td></tr>
+        <tr><td>CascadeType.ALL</td><td>All operations on parent cascade to child</td></tr>
+        <tr><td>FetchType.LAZY</td><td>Load related data only when accessed</td></tr>
+        <tr><td>FetchType.EAGER</td><td>Load related data immediately with parent</td></tr>
+        <tr><td>CrudRepository</td><td>Basic CRUD — save, findById, findAll, delete, count</td></tr>
+        <tr><td>JpaRepository</td><td>CrudRepository + pagination, sorting, flush — use this</td></tr>
+        <tr><td>Derived Query</td><td>SQL auto-generated from method name (findByEname)</td></tr>
+        <tr><td>JPQL</td><td>Query using Java class/field names — Hibernate translates to SQL</td></tr>
+        <tr><td>@Query</td><td>Write custom JPQL or native SQL in repository</td></tr>
+        <tr><td>@Modifying</td><td>Required for UPDATE/DELETE @Query methods</td></tr>
+        <tr><td>nativeQuery=true</td><td>Write actual SQL in @Query instead of JPQL</td></tr>
+        <tr><td>CriteriaBuilder</td><td>Builds type-safe dynamic queries programmatically</td></tr>
+        <tr><td>Predicate</td><td>A single condition in Criteria Query (like WHERE clause)</td></tr>
+        <tr><td>EntityManager</td><td>JPA interface for direct DB operations and Criteria API</td></tr>
+        <tr><td>@PersistenceContext</td><td>Injects EntityManager into a class</td></tr>
+        <tr><td>@Transactional</td><td>Wraps service method in transaction — auto commit/rollback</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<div class="dl-bar">
+  <p style="margin-bottom:14px;color:var(--muted);font-size:.9rem;">Save these notes for offline reference</p>
+  <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
+    <button class="dl-btn" onclick="dlHTML()">⬇ Download as HTML</button>
+    <button class="dl-btn" style="background:linear-gradient(135deg,#1565c0,#1976d2);" onclick="dlWord()">⬇ Download as Word (.doc)</button>
+    <button class="dl-btn" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa);" onclick="dlSimple()">⬇ Simple Format (Word)</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+function st(btn, id) {
+  var g = btn.closest('.tab-group');
+  g.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  g.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function safeText(n){ try{ return n.innerText||''; }catch(e){ return ''; } }
+
+function buildBody(plain) {
+  var secs = document.querySelectorAll('.sec');
+  var body = '';
+  secs.forEach(function(sec){
+    var num = sec.querySelector('.sec-num');
+    var ttl = sec.querySelector('.sec-title h2');
+    if(ttl){
+      var nt = (num ? safeText(num)+'. ' : '') + safeText(ttl);
+      body += plain ? '<h2>'+nt+'</h2>' : '<h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">'+nt+'</h2>';
+    }
+    Array.from(sec.childNodes).forEach(function(node){
+      if(node.nodeType!==1) return;
+      var tag=node.tagName||'', cls=node.className||'';
+      if(cls.includes('sec-title')) return;
+      try{
+        if(tag==='PRE'){
+          var lbl=node.querySelector('.lang-label');
+          var raw=safeText(node);
+          var lines=raw.split('\n').filter(function(l){ return !lbl||l.trim()!==safeText(lbl).trim(); });
+          var code=lines.join('\n').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          body += plain ? '<pre>'+code+'</pre>' : '<pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;white-space:pre-wrap;margin:4pt 0 10pt;">'+code+'</pre>';
+        } else if(cls.includes('tab-group')){
+          node.querySelectorAll('.tab-pane').forEach(function(pane){
+            var bid=pane.id;
+            var btn=node.querySelector('.tab-btn[onclick*="'+bid+'"]');
+            var lbl=btn?safeText(btn):bid;
+            body += plain ? '<p><b>['+lbl+']</b></p>' : '<p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">['+lbl+']</p>';
+            pane.querySelectorAll('pre').forEach(function(pre){
+              var lbl2=pre.querySelector('.lang-label');
+              var raw2=safeText(pre);
+              var lines2=raw2.split('\n').filter(function(l){ return !lbl2||l.trim()!==safeText(lbl2).trim(); });
+              var code2=lines2.join('\n').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+              body += plain ? '<pre>'+code2+'</pre>' : '<pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;white-space:pre-wrap;margin:2pt 0 8pt;">'+code2+'</pre>';
+            });
+          });
+        } else if(tag==='TABLE'||cls.includes('cheat')){
+          var tbl=tag==='TABLE'?node:node.querySelector('table');
+          if(!tbl) return;
+          if(cls.includes('cheat')){ var h3=node.querySelector('h3'); if(h3) body+=plain?'<h3>'+safeText(h3)+'</h3>':'<h3 style="color:#2e7d52;">'+safeText(h3)+'</h3>'; }
+          var t=plain?'<table>':'<table style="border-collapse:collapse;width:100%;font-size:10pt;margin:8pt 0;">';
+          tbl.querySelectorAll('tr').forEach(function(tr,ri){
+            t+='<tr>';
+            tr.querySelectorAll('th,td').forEach(function(cell){
+              var isH=cell.tagName==='TH';
+              var ct=safeText(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+              t+=plain?'<'+cell.tagName+'>'+ct+'</'+cell.tagName+'>':'<'+cell.tagName+' style="border:1pt solid #ccc;padding:6pt 10pt;background:'+(isH?'#1a7a45':ri%2===0?'#f8fbf9':'#fff')+';color:'+(isH?'#fff':'#1e2a23')+';font-weight:'+(isH?'bold':'normal')+';">'+ct+'</'+cell.tagName+'>';
+            });
+            t+='</tr>';
+          });
+          t+='</table>'; body+=t;
+        } else if(cls.includes('sub')||tag==='H3'){
+          body+=plain?'<h3>'+safeText(node)+'</h3>':'<h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">'+safeText(node)+'</h3>';
+        } else if(cls.includes('def-box')||cls.includes('note-box')||cls.includes('warn-box')){
+          var bg=cls.includes('def-box')?'#e8f5ee':cls.includes('warn-box')?'#fff3e0':'#fffde7';
+          var br=cls.includes('def-box')?'#2e9e5e':cls.includes('warn-box')?'#e65100':'#f9a825';
+          body+=plain?'<p>'+safeText(node)+'</p>':'<div style="background:'+bg+';border-left:4pt solid '+br+';padding:8pt 12pt;margin:8pt 0;">'+safeText(node)+'</div>';
+        } else if(cls.includes('flow')||cls.includes('rel-diagram')||cls.includes('arch-diagram')){
+          body+=plain?'<p>'+safeText(node)+'</p>':'<div style="background:#f8fbf9;border:1px solid #b7dfc8;padding:12pt;margin:8pt 0;font-size:9pt;">'+safeText(node)+'</div>';
+        } else if(tag==='P'||tag==='UL'||tag==='OL'){
+          var tlo=tag.toLowerCase();
+          var txt=safeText(node).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          body+=plain?'<'+tlo+'>'+txt+'</'+tlo+'>':'<'+tlo+' style="font-size:10pt;margin:6pt 0;">'+txt+'</'+tlo+'>';
+        }
+      } catch(e){}
+    });
+    body+='<br/>';
+  });
+  return body;
+}
+
+function dlHTML(){
+  try{
+    var html='<!DOCTYPE html>'+document.documentElement.outerHTML;
+    var blob=new Blob([html],{type:'text/html'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='Spring_Data_JPA_Notes.html';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(a.href); },100);
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+function dlWord(){
+  try{
+    var body=buildBody(false);
+    var doc='<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"/><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;margin:1in;line-height:1.6;}h1{font-size:20pt;color:#1a7a45;}h2{font-size:14pt;color:#1a7a45;}h3{font-size:11pt;color:#2e7d52;}pre{font-family:"Courier New",monospace;font-size:9pt;white-space:pre-wrap;}table{border-collapse:collapse;width:100%;}td,th{border:1pt solid #ccc;padding:5pt 9pt;}</style></head><body><h1>Spring Data JPA - Complete Notes</h1><hr/>'+body+'</body></html>';
+    var blob=new Blob(['\ufeff',doc],{type:'application/msword'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='Spring_Data_JPA_Notes.doc';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(a.href); },100);
+  }catch(e){ alert('Error: '+e.message); }
+}
+
+function dlSimple(){
+  try{
+    var body=buildBody(true);
+    var doc='<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"/><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#000;margin:1in;line-height:1.6;}h1{font-size:16pt;}h2{font-size:13pt;margin-top:16pt;border-bottom:1px solid #999;padding-bottom:2pt;}h3{font-size:11pt;margin-top:10pt;font-weight:bold;}p{margin:4pt 0 6pt;}pre{font-family:"Courier New",monospace;font-size:9pt;background:#f5f5f5;padding:8pt;margin:6pt 0;white-space:pre-wrap;border:1px solid #ddd;}table{border-collapse:collapse;width:100%;margin:8pt 0;font-size:10pt;}th{border:1px solid #999;padding:5pt 8pt;background:#eee;font-weight:bold;text-align:left;}td{border:1px solid #bbb;padding:5pt 8pt;}hr{border:none;border-top:1px solid #ccc;margin:10pt 0;}</style></head><body><h1>Spring Data JPA - Plain Notes</h1><hr/>'+body+'</body></html>';
+    var blob=new Blob(['\ufeff',doc],{type:'application/msword'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='Spring_Data_JPA_Plain_Notes.doc';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(a.href); },100);
+  }catch(e){ alert('Error: '+e.message); }
+}
+</script>
+</body>
+</html>

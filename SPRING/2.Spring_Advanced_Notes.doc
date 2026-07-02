@@ -1,0 +1,598 @@
+﻿<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"/><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;margin:1in;line-height:1.6;}h1{font-size:20pt;color:#1a7a45;}h2{font-size:14pt;color:#1a7a45;}h3{font-size:11pt;color:#2e7d52;}pre{font-family:"Courier New",monospace;font-size:9pt;}table{border-collapse:collapse;width:100%;}td,th{border:1pt solid #ccc;padding:5pt 9pt;}</style></head><body><h1>🌿 Spring Advanced — Complete Notes</h1><hr/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">1. Injecting Collections</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    Spring allows you to inject <b>List, Set, Map, and Properties</b> into a bean's fields. Shown below both in XML and Annotation style.
+  </div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Employee.java (same for both approaches)</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+public class Employee {
+    private List&lt;String&gt;        phones;
+    private Set&lt;String&gt;         skills;
+    private Map&lt;String,String&gt;  addresses;
+    private Properties          config;
+    // getters and setters...
+}</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — BEAN.XML
+&lt;bean id="emp" class="com.cts.demo.model.Employee"&gt;
+    &lt;property name="phones"&gt;
+        &lt;list&gt;&lt;value&gt;9876543210&lt;/value&gt;&lt;value&gt;9123456789&lt;/value&gt;&lt;/list&gt;
+    &lt;/property&gt;
+    &lt;property name="skills"&gt;
+        &lt;set&gt;&lt;value&gt;Java&lt;/value&gt;&lt;value&gt;Spring&lt;/value&gt;&lt;/set&gt;
+    &lt;/property&gt;
+    &lt;property name="addresses"&gt;
+        &lt;map&gt;
+            &lt;entry key="home"   value="Chennai"/&gt;
+            &lt;entry key="office" value="Bangalore"/&gt;
+        &lt;/map&gt;
+    &lt;/property&gt;
+    &lt;property name="config"&gt;
+        &lt;props&gt;
+            &lt;prop key="db.url"&gt;jdbc:mysql://localhost/emp&lt;/prop&gt;
+        &lt;/props&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Annotation]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Annotation — Employee.java@Component
+public class Employee {
+
+    // @Value with SpEL (Spring Expression Language) injects collection literals
+    @Value("#{ {'9876543210','9123456789'} }")
+    private List&lt;String&gt; phones;
+
+    @Value("#{ {'Java','Spring'} }")
+    private Set&lt;String&gt; skills;
+
+    @Value("#{ {'home':'Chennai','office':'Bangalore'} }")
+    private Map&lt;String,String&gt; addresses;
+
+    // For Properties — inject via @Autowired from a @Bean method
+    @Autowired
+    private Properties config;
+}
+
+// AppConfig.java — define Properties bean
+@Configuration
+public class AppConfig {
+    @Bean
+    public Properties config() {
+        Properties p = new Properties();
+        p.setProperty("db.url", "jdbc:mysql://localhost/emp");
+        return p;
+    }
+}</pre><table style="border-collapse:collapse;width:100%;font-size:10pt;margin:8pt 0;"><tr><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">XML Tag</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Java Type</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Annotation SpEL</TH></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>&lt;list&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">List&lt;T&gt;</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>@Value("#{ {'a','b'} }")</code></TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><code>&lt;set&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Set&lt;T&gt;</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><code>@Value("#{ {'a','b'} }")</code></TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>&lt;map&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Map&lt;K,V&gt;</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>@Value("#{ {'k':'v'} }")</code></TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><code>&lt;props&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Properties</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Use <code>@Bean</code> method + <code>@Autowired</code></TD></tr></table><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">2. Inner Beans</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    An <b>Inner Bean</b> is a bean defined <em>inside</em> another bean's property. It has no id and cannot be reused by other beans. In annotation style, there is no direct equivalent — you simply create and assign the object manually inside a <code>@Bean</code> method.
+  </div><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML
+&lt;bean id="emp" class="com.cts.demo.model.Employee"&gt;
+    &lt;property name="eno" value="101"/&gt;
+    &lt;property name="department"&gt;
+        &lt;!-- Inner bean: no id, cannot be used elsewhere --&gt;
+        &lt;bean class="com.cts.demo.model.Department"&gt;
+            &lt;property name="dno"   value="10"/&gt;
+            &lt;property name="dname" value="HR"/&gt;
+        &lt;/bean&gt;
+    &lt;/property&gt;
+&lt;/bean&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Annotation / Java Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java// No direct "inner bean" in annotations.
+// Equivalent: create the object inline inside the @Bean method
+@Bean
+public Employee emp() {
+    Department dept = new Department();  // inline — like an inner bean
+    dept.setDno(10);
+    dept.setDname("HR");
+
+    Employee e = new Employee();
+    e.setEno(101);
+    e.setDepartment(dept);               // dept is exclusive to this employee
+    return e;
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">3. Bean Inheritance (Spring Config Level)</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    In Spring XML, a <b>child bean can inherit property values from a parent bean</b> using the <code>parent</code> attribute. The child gets all the parent's configured properties and can override or add new ones. This is <em>NOT Java class inheritance</em> — it is purely about reusing Spring configuration.
+  </div><div style="background:#fffde7;border-left:4pt solid #f9a825;padding:8pt 12pt;margin:8pt 0;"><strong>💡 Think of it like a template:</strong> The parent bean is a configuration template. Child beans say "start with everything the parent has, then I'll change what I need."</div><p style="font-family:Courier New;font-size:9pt;background:#f5f5f5;padding:8pt;margin:6pt 0;">baseEmployee (abstract=true)
+ename=DefaultName, dept=IT
+↙         ↘
+emp1
+ename=Alice, eno=101
+dept=IT (inherited)
+emp2
+ename=Bob, eno=102
+dept=IT (inherited)</p><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML
+&lt;!-- abstract="true" = template only, Spring won't create this object --&gt;
+&lt;bean id="baseEmployee" class="com.cts.demo.model.Employee" abstract="true"&gt;
+    &lt;property name="ename" value="DefaultName"/&gt;
+    &lt;property name="dept"  value="IT"/&gt;
+&lt;/bean&gt;
+
+&lt;!-- emp1: inherits ename+dept from parent, overrides ename, adds eno --&gt;
+&lt;bean id="emp1" parent="baseEmployee"&gt;
+    &lt;property name="ename" value="Alice"/&gt;  &lt;!-- overrides --&gt;
+    &lt;property name="eno"   value="101"/&gt;   &lt;!-- new --&gt;
+&lt;/bean&gt;
+&lt;!-- emp1 result: ename=Alice, dept=IT, eno=101 --&gt;
+
+&lt;bean id="emp2" parent="baseEmployee"&gt;
+    &lt;property name="ename" value="Bob"/&gt;
+    &lt;property name="eno"   value="102"/&gt;
+&lt;/bean&gt;
+&lt;!-- emp2 result: ename=Bob, dept=IT, eno=102 --&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Java Config Equivalent]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java// No direct parent= in annotations.
+// Equivalent: extract common setup into a helper method
+@Configuration
+public class AppConfig {
+
+    // Helper — acts like the parent template
+    private Employee baseEmployee() {
+        Employee e = new Employee();
+        e.setEname("DefaultName");
+        e.setDept("IT");
+        return e;
+    }
+
+    @Bean
+    public Employee emp1() {
+        Employee e = baseEmployee();   // reuse common values
+        e.setEname("Alice");          // override
+        e.setEno(101);                 // add new
+        return e;
+    }
+
+    @Bean
+    public Employee emp2() {
+        Employee e = baseEmployee();
+        e.setEname("Bob");
+        e.setEno(102);
+        return e;
+    }
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">4. Java Inheritance in Spring — Employee & PermanentEmployee</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    This is <b>actual Java class inheritance</b> (using <code>extends</code>) combined with Spring bean management. A child class inherits all fields and methods from the parent class and adds its own. Spring registers both as separate beans.
+  </div><div style="background:#fffde7;border-left:4pt solid #f9a825;padding:8pt 12pt;margin:8pt 0;">
+    <strong>💡 Two types of inheritance — don't confuse them:</strong><br>
+    <b>Spring Config Inheritance</b> (Section 3) → uses <code>parent=</code> in XML — only about reusing config values.<br>
+    <b>Java Class Inheritance</b> (this section) → uses <code>extends</code> in Java — child class gets parent's fields and methods.
+  </div><p style="font-family:Courier New;font-size:9pt;background:#f5f5f5;padding:8pt;margin:6pt 0;">Employee (Parent Class)
+eno, ename, dept
+↓ extends
+PermanentEmployee (Child Class)
+inherits: eno, ename, dept
+adds: pfAmount, bonus</p><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Employee.java — Parent Class</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+@Component
+public class Employee {
+
+    private int    eno;
+    private String ename;
+    private String dept;
+
+    // Constructor
+    public Employee() {}
+    public Employee(int eno, String ename, String dept) {
+        this.eno   = eno;
+        this.ename = ename;
+        this.dept  = dept;
+    }
+
+    // Getters and Setters
+    public int    getEno()             { return eno; }
+    public void   setEno(int eno)     { this.eno = eno; }
+    public String getEname()           { return ename; }
+    public void   setEname(String e)   { this.ename = e; }
+    public String getDept()            { return dept; }
+    public void   setDept(String d)    { this.dept = d; }
+
+    public void displayInfo() {
+        System.out.println("Eno: "+eno+", Ename: "+ename+", Dept: "+dept);
+    }
+
+    @Override
+    public String toString() {
+        return "Employee[eno="+eno+", ename="+ename+", dept="+dept+"]";
+    }
+}</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">PermanentEmployee.java — Child Class</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+@Component
+public class PermanentEmployee extends Employee {
+
+    // Additional fields specific to permanent employees
+    private double pfAmount;   // Provident Fund
+    private double bonus;
+
+    // Constructor — calls parent constructor using super()
+    public PermanentEmployee() {}
+    public PermanentEmployee(int eno, String ename, String dept,
+                              double pfAmount, double bonus) {
+        super(eno, ename, dept);   // pass common fields to parent constructor
+        this.pfAmount = pfAmount;
+        this.bonus    = bonus;
+    }
+
+    public double getPfAmount()          { return pfAmount; }
+    public void   setPfAmount(double p) { this.pfAmount = p; }
+    public double getBonus()             { return bonus; }
+    public void   setBonus(double b)   { this.bonus = b; }
+
+    // Override parent method — add PF and bonus info
+    @Override
+    public void displayInfo() {
+        super.displayInfo();   // prints eno, ename, dept from parent
+        System.out.println("PF: "+pfAmount+", Bonus: "+bonus);
+    }
+
+    @Override
+    public String toString() {
+        return "PermanentEmployee[eno="+getEno()+", ename="+getEname()
+             + ", dept="+getDept()+", pf="+pfAmount+", bonus="+bonus+"]";
+    }
+}</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Registering Both as Beans</h3><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — BEAN.XML
+&lt;!-- Register Employee bean --&gt;
+&lt;bean id="emp" class="com.cts.demo.model.Employee"&gt;
+    &lt;property name="eno"   value="101"/&gt;
+    &lt;property name="ename" value="Alice"/&gt;
+    &lt;property name="dept"  value="IT"/&gt;
+&lt;/bean&gt;
+
+&lt;!-- Register PermanentEmployee bean (child class) --&gt;
+&lt;bean id="permEmp" class="com.cts.demo.model.PermanentEmployee"&gt;
+    &lt;property name="eno"      value="201"/&gt;   &lt;!-- inherited field --&gt;
+    &lt;property name="ename"    value="Bob"/&gt;    &lt;!-- inherited field --&gt;
+    &lt;property name="dept"     value="HR"/&gt;     &lt;!-- inherited field --&gt;
+    &lt;property name="pfAmount" value="5000"/&gt;  &lt;!-- own field --&gt;
+    &lt;property name="bonus"    value="20000"/&gt; &lt;!-- own field --&gt;
+&lt;/bean&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Annotation]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Annotation// @Component on both classes — Spring registers them as beans
+
+@Component
+public class Employee {
+    @Value("101") private int    eno;
+    @Value("Alice") private String ename;
+    @Value("IT")    private String dept;
+    // getters, setters, displayInfo()...
+}
+
+@Component
+public class PermanentEmployee extends Employee {
+    @Value("5000")  private double pfAmount;
+    @Value("20000") private double bonus;
+    // getters, setters, displayInfo() override...
+}
+
+// bean.xml — only needs component scan
+// &lt;context:component-scan base-package="com.cts.demo"/&gt;
+
+// Main.java
+ApplicationContext ctx = new ClassPathXmlApplicationContext("bean.xml");
+Employee      e  = ctx.getBean(Employee.class);
+PermanentEmployee pe = ctx.getBean(PermanentEmployee.class);
+e.displayInfo();    // Eno:101, Ename:Alice, Dept:IT
+pe.displayInfo();   // Eno:101, Ename:Alice, Dept:IT  ← inherited
+                    // PF:5000, Bonus:20000          ← own</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Java Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java@Configuration
+public class AppConfig {
+
+    @Bean
+    public Employee employee() {
+        return new Employee(101, "Alice", "IT");
+    }
+
+    @Bean
+    public PermanentEmployee permanentEmployee() {
+        return new PermanentEmployee(201, "Bob", "HR", 5000, 20000);
+    }
+}
+
+// Main.java
+ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+
+Employee e = ctx.getBean("employee", Employee.class);
+e.displayInfo();
+// Output: Eno: 101, Ename: Alice, Dept: IT
+
+PermanentEmployee pe = ctx.getBean("permanentEmployee", PermanentEmployee.class);
+pe.displayInfo();
+// Output: Eno: 201, Ename: Bob, Dept: HR
+//         PF: 5000.0, Bonus: 20000.0</pre><table style="border-collapse:collapse;width:100%;font-size:10pt;margin:8pt 0;"><tr><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Feature</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Spring Config Inheritance (Section 3)</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Java Class Inheritance (Section 4)</TH></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Keyword used</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>parent=</code> in XML</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>extends</code> in Java</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">What is inherited?</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Spring property values (config only)</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Fields, methods, constructors</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Same class?</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">✅ Yes — same Java class</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">❌ No — different Java classes</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Method override possible?</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">❌ No</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">✅ Yes — via @Override</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Purpose</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Avoid repeating XML config</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Model real-world IS-A relationships</TD></tr></table><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">5. Interfaces in Spring</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    Spring promotes programming to interfaces for loose coupling. Define an interface, implement it, register as a bean, and inject via the interface type.
+  </div><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+public interface PaymentService {
+    void pay(double amount);
+}
+
+@Service
+public class CreditCardPayment implements PaymentService {
+    public void pay(double amount) {
+        System.out.println("Paid via Credit Card: " + amount);
+    }
+}
+
+@Component
+public class OrderService {
+    @Autowired
+    private PaymentService paymentService; // inject by interface — loosely coupled
+    public void placeOrder() { paymentService.pay(500.0); }
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">6. Bean Scope</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>Defines how many instances Spring creates. Default is singleton.</div><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML
+&lt;bean id="emp" class="...Employee" scope="singleton"/&gt;  &lt;!-- default --&gt;
+&lt;bean id="emp" class="...Employee" scope="prototype"/&gt; &lt;!-- new per getBean() --&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Annotation]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Annotation@Component
+@Scope("singleton")   // one instance — default
+public class EmployeeService { }
+
+@Component
+@Scope("prototype")   // new instance every getBean()
+public class LoginForm { }
+
+@Component
+@Scope("request")    // one per HTTP request (web only)
+public class RequestData { }
+
+@Component
+@Scope("session")    // one per HTTP session (web only)
+public class UserCart { }</pre><table style="border-collapse:collapse;width:100%;font-size:10pt;margin:8pt 0;"><tr><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Scope</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Instances</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Use Case</TH></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">singleton</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">One per container</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Services, DAOs</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">prototype</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">New per getBean()</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Stateful / form objects</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">request</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">One per HTTP request</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Request-specific data</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">session</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">One per HTTP session</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Shopping cart, user data</TD></tr></table><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">7. AOP — Introduction</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    AOP separates <em>cross-cutting concerns</em> (logging, security, transactions) from business logic. Write once in an Aspect — Spring applies it automatically.
+  </div><table style="border-collapse:collapse;width:100%;font-size:10pt;margin:8pt 0;"><tr><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Term</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Meaning</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Example</TH></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><b>Aspect</b></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Class containing cross-cutting logic</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">LoggingAspect</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><b>Advice</b></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Action to perform</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Log before method runs</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><b>JoinPoint</b></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Point in execution where advice can run</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Any method call</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><b>Pointcut</b></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Expression selecting which methods to intercept</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">All methods in service package</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><b>Weaving</b></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Applying aspects to target objects</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Done by Spring at runtime</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><b>Proxy</b></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Spring-created wrapper around target</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Spring AOP proxy object</TD></tr></table><table style="border-collapse:collapse;width:100%;font-size:10pt;margin:8pt 0;"><tr><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Advice Type</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">When it Runs</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Annotation</TH></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Before</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Before method executes</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>@Before</code></TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">After</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">After method (always)</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><code>@After</code></TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">AfterReturning</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">After successful return</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>@AfterReturning</code></TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">AfterThrowing</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">After exception thrown</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><code>@AfterThrowing</code></TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Around</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Before AND after — full control</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>@Around</code></TD></tr></table><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">8. Spring AOP</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    Spring AOP uses runtime proxies, supports method-level join points only. Enable with <code>@EnableAspectJAutoProxy</code> and annotate your aspect class with <code>@Aspect</code> + <code>@Component</code>.
+  </div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">pom.xml Dependencies</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">XML
+&lt;dependency&gt;&lt;groupId&gt;org.springframework&lt;/groupId&gt;&lt;artifactId&gt;spring-aop&lt;/artifactId&gt;&lt;version&gt;7.0.5&lt;/version&gt;&lt;/dependency&gt;
+&lt;dependency&gt;&lt;groupId&gt;org.aspectj&lt;/groupId&gt;&lt;artifactId&gt;aspectjweaver&lt;/artifactId&gt;&lt;version&gt;1.9.7&lt;/version&gt;&lt;/dependency&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — BEAN.XML
+&lt;aop:aspectj-autoproxy/&gt;   &lt;!-- enables AOP --&gt;
+&lt;context:component-scan base-package="com.cts.demo"/&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Annotation / Java Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java@Configuration
+@EnableAspectJAutoProxy        // enables AOP proxy creation
+@ComponentScan("com.cts.demo")
+public class AppConfig { }</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">LoggingAspect.java (same for both XML and annotation config)</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+@Aspect
+@Component
+public class LoggingAspect {
+
+    @Before("execution(* com.cts.demo.service.*.*(..))")
+    public void logBefore() {
+        System.out.println("[LOG] Method is about to execute");
+    }
+
+    @After("execution(* com.cts.demo.service.*.*(..))")
+    public void logAfter() {
+        System.out.println("[LOG] Method has finished");
+    }
+
+    @AfterReturning(pointcut="execution(* com.cts.demo.service.*.*(..))", returning="result")
+    public void logReturn(Object result) {
+        System.out.println("[LOG] Returned: " + result);
+    }
+
+    @AfterThrowing(pointcut="execution(* com.cts.demo.service.*.*(..))", throwing="ex")
+    public void logException(Exception ex) {
+        System.out.println("[LOG] Exception: " + ex.getMessage());
+    }
+}</pre><div style="background:#fffde7;border-left:4pt solid #f9a825;padding:8pt 12pt;margin:8pt 0;"><strong>💡 Pointcut expression:</strong> <code>execution(* com.cts.demo.service.*.*(..))</code><br>
+  <code>*</code> = any return type &nbsp;|&nbsp; package = com.cts.demo.service &nbsp;|&nbsp; <code>*</code> = any class &nbsp;|&nbsp; <code>*</code> = any method &nbsp;|&nbsp; <code>(..)</code> = any args</div><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">9. AspectJ — @Around Advice</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    <code>@Around</code> is the most powerful advice — it wraps the entire method. You control whether to execute it using <code>pjp.proceed()</code>.
+  </div><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+@Aspect
+@Component
+public class PerformanceAspect {
+
+    @Around("execution(* com.cts.demo.service.*.*(..))")
+    public Object measureTime(ProceedingJoinPoint pjp) throws Throwable {
+        long start  = System.currentTimeMillis();
+        Object result = pjp.proceed();               // calls the actual method
+        long end    = System.currentTimeMillis();
+        System.out.println("Time: " + (end - start) + "ms");
+        return result;
+    }
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">10. PropertyPlaceholderConfigurer</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    Externalizes config values into a <code>.properties</code> file and injects using <code>${key}</code>. Avoids hardcoding DB URLs and passwords in code.
+  </div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">db.properties (same for all approaches)</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">PROPERTIES
+db.url=jdbc:mysql://localhost:3306/empdb
+db.username=root
+db.password=root123
+db.driver=com.mysql.cj.jdbc.Driver</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — BEAN.XML
+&lt;context:property-placeholder location="classpath:db.properties"/&gt;
+
+&lt;bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"&gt;
+    &lt;property name="url"            value="${db.url}"/&gt;
+    &lt;property name="username"       value="${db.username}"/&gt;
+    &lt;property name="password"       value="${db.password}"/&gt;
+    &lt;property name="driverClassName" value="${db.driver}"/&gt;
+&lt;/bean&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Annotation / Java Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java@Configuration
+@PropertySource("classpath:db.properties")  // loads the properties file
+public class AppConfig {
+
+    @Value("${db.url}")      private String url;
+    @Value("${db.username}") private String username;
+    @Value("${db.password}") private String password;
+    @Value("${db.driver}")   private String driver;
+
+    @Bean
+    public DataSource dataSource() {
+        DriverManagerDataSource ds = new DriverManagerDataSource();
+        ds.setUrl(url);
+        ds.setUsername(username);
+        ds.setPassword(password);
+        ds.setDriverClassName(driver);
+        return ds;
+    }
+
+    // Required to resolve @Value placeholders
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer pspc() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">11. ResourceBundleMessageSource</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    Used for internationalization (i18n) — shows messages in different languages based on Locale.
+  </div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">messages_en.properties</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">PROPERTIES
+greeting=Hello, Welcome!
+farewell=Goodbye!</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">messages_fr.properties</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">PROPERTIES
+greeting=Bonjour, Bienvenue!
+farewell=Au revoir!</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — BEAN.XML
+&lt;!-- id MUST be "messageSource" for Spring auto-detection --&gt;
+&lt;bean id="messageSource"
+      class="org.springframework.context.support.ResourceBundleMessageSource"&gt;
+    &lt;property name="basename" value="messages"/&gt;
+&lt;/bean&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Java Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java@Bean
+public MessageSource messageSource() {
+    ResourceBundleMessageSource ms = new ResourceBundleMessageSource();
+    ms.setBasename("messages");  // reads messages_en.properties, messages_fr.properties
+    ms.setDefaultEncoding("UTF-8");
+    return ms;
+}</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Main.java — Reading Messages</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+String en = context.getMessage("greeting", null, Locale.ENGLISH);
+System.out.println(en);  // Hello, Welcome!
+
+String fr = context.getMessage("greeting", null, Locale.FRENCH);
+System.out.println(fr);  // Bonjour, Bienvenue!</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">12. JDBC — Executing Queries with JdbcTemplate</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    JdbcTemplate eliminates boilerplate JDBC code. You only write SQL and result-mapping logic.
+  </div><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — BEAN.XML
+&lt;context:property-placeholder location="classpath:db.properties"/&gt;
+
+&lt;bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"&gt;
+    &lt;property name="url"            value="${db.url}"/&gt;
+    &lt;property name="username"       value="${db.username}"/&gt;
+    &lt;property name="password"       value="${db.password}"/&gt;
+    &lt;property name="driverClassName" value="${db.driver}"/&gt;
+&lt;/bean&gt;
+
+&lt;bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"&gt;
+    &lt;property name="dataSource" ref="dataSource"/&gt;
+&lt;/bean&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Java Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java@Configuration
+@PropertySource("classpath:db.properties")
+public class AppConfig {
+
+    @Value("${db.url}")      private String url;
+    @Value("${db.username}") private String username;
+    @Value("${db.password}") private String password;
+    @Value("${db.driver}")   private String driver;
+
+    @Bean
+    public DataSource dataSource() {
+        DriverManagerDataSource ds = new DriverManagerDataSource();
+        ds.setUrl(url); ds.setUsername(username);
+        ds.setPassword(password); ds.setDriverClassName(driver);
+        return ds;
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource ds) {
+        return new JdbcTemplate(ds);
+    }
+}</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">EmployeeDAO.java — CRUD operations (same for both)</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+@Repository
+public class EmployeeDAO {
+
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    // INSERT
+    public void save(Employee e) {
+        jdbcTemplate.update("INSERT INTO employee(eno,ename) VALUES(?,?)", e.getEno(), e.getEname());
+    }
+
+    // SELECT all
+    public List&lt;Employee&gt; findAll() {
+        return jdbcTemplate.query("SELECT * FROM employee", (rs, row) -&gt; {
+            Employee emp = new Employee();
+            emp.setEno(rs.getInt("eno"));
+            emp.setEname(rs.getString("ename"));
+            return emp;
+        });
+    }
+
+    // SELECT count
+    public int count() {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM employee", Integer.class);
+    }
+
+    // DELETE
+    public void delete(int eno) {
+        jdbcTemplate.update("DELETE FROM employee WHERE eno=?", eno);
+    }
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">13. Transaction Management</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    <code>@Transactional</code> wraps a method in a DB transaction — if any step fails, all changes are automatically rolled back.
+  </div><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[XML Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — BEAN.XML
+&lt;tx:annotation-driven transaction-manager="txManager"/&gt;
+
+&lt;bean id="txManager"
+      class="org.springframework.jdbc.datasource.DataSourceTransactionManager"&gt;
+    &lt;property name="dataSource" ref="dataSource"/&gt;
+&lt;/bean&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[Java Config]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Java Config — AppConfig.java@Configuration
+@EnableTransactionManagement   // activates @Transactional support
+public class AppConfig {
+
+    @Bean
+    public PlatformTransactionManager txManager(DataSource ds) {
+        return new DataSourceTransactionManager(ds);
+    }
+}</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">BankService.java — Using @Transactional (same for both)</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+@Service
+public class BankService {
+
+    @Autowired private AccountDAO accountDAO;
+
+    @Transactional
+    public void transfer(int fromId, int toId, double amount) {
+        accountDAO.debit(fromId, amount);    // step 1
+        accountDAO.credit(toId, amount);     // step 2 — if fails, step 1 is rolled back
+    }
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">14. Tomcat — Application Server</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    Apache Tomcat is a web container that runs Servlets and JSPs. Web apps are deployed as WAR files and accessed at <code>http://localhost:8080/appname</code>.
+  </div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">web.xml — Deployment Descriptor</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">XML (WEB.XML)
+&lt;web-app&gt;
+    &lt;servlet&gt;
+        &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
+        &lt;servlet-class&gt;com.cts.demo.HelloServlet&lt;/servlet-class&gt;
+    &lt;/servlet&gt;
+    &lt;servlet-mapping&gt;
+        &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
+        &lt;url-pattern&gt;/hello&lt;/url-pattern&gt;
+    &lt;/servlet-mapping&gt;
+    &lt;welcome-file-list&gt;&lt;welcome-file&gt;index.jsp&lt;/welcome-file&gt;&lt;/welcome-file-list&gt;
+&lt;/web-app&gt;</pre><div style="background:#fffde7;border-left:4pt solid #f9a825;padding:8pt 12pt;margin:8pt 0;"><strong>💡 Annotation alternative:</strong> Use <code>@WebServlet("/hello")</code> on the servlet class to replace the web.xml servlet mapping entirely.</div><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">15. Servlets</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    A Servlet handles HTTP requests and responses on the server. Tomcat calls <code>doGet()</code> or <code>doPost()</code> based on the HTTP method.
+  </div><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[web.xml mapping]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">XML — WEB.XML
+&lt;servlet&gt;
+    &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
+    &lt;servlet-class&gt;com.cts.demo.HelloServlet&lt;/servlet-class&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+    &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
+    &lt;url-pattern&gt;/hello&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;</pre><p style="font-weight:bold;color:#1a7a45;margin:8pt 0 2pt;">[@WebServlet (Annotation)]</p><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:2pt 0 8pt;white-space:pre-wrap;">Annotation — no web.xml needed@WebServlet("/hello")   // maps URL directly on the class
+public class HelloServlet extends HttpServlet { ... }</pre><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">HelloServlet.java — Full Example</h3><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JAVA
+@WebServlet("/hello")
+public class HelloServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+
+        String name = req.getParameter("name");     // read ?name=Alice from URL
+        req.setAttribute("greeting", "Hello, "+name); // pass to JSP
+
+        // forward to JSP (server-side, URL stays same)
+        req.getRequestDispatcher("/hello.jsp").forward(req, res);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        doGet(req, res);
+    }
+}</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">16. JSP (JavaServer Pages)</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    JSP allows embedding Java in HTML. Used as the view layer in MVC. Tomcat compiles JSP into a Servlet internally.
+  </div><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JSP — HELLO.JSP
+&lt;%@ page language="java" contentType="text/html" pageEncoding="UTF-8"%&gt;
+&lt;html&gt;&lt;body&gt;
+
+    &lt;%-- EL: read attribute set by Servlet --&gt;
+    &lt;h2&gt;${greeting}&lt;/h2&gt;
+
+    &lt;%-- Scriptlet: Java code --&gt;
+    &lt;% String msg = "From scriptlet"; out.println(msg); %&gt;
+
+    &lt;%-- Expression: print value --&gt;
+    Today: &lt;%= new java.util.Date() %&gt;
+
+&lt;/body&gt;&lt;/html&gt;</pre><table style="border-collapse:collapse;width:100%;font-size:10pt;margin:8pt 0;"><tr><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Syntax</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Name</TH><TH style="border:1pt solid #ccc;padding:6pt 10pt;background:#1a7a45;color:#fff;font-weight:bold;">Purpose</TH></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>&lt;% %&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Scriptlet</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Java code block</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><code>&lt;%= %&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Expression</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Print value to page</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>&lt;%! %&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Declaration</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Declare variable/method</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;"><code>&lt;%@ %&gt;</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Directive</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#f8fbf9;color:#1e2a23;font-weight:normal;">Page settings, imports</TD></tr><tr><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;"><code>${...}</code></TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">EL</TD><TD style="border:1pt solid #ccc;padding:6pt 10pt;background:#fff;color:#1e2a23;font-weight:normal;">Modern way to print values</TD></tr></table><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">17. JSTL</h2><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Definition</strong>
+    JSTL replaces Java scriptlets in JSP with clean XML-style tags for loops, conditionals, and formatting.
+  </div><pre style="background:#1e2a23;color:#b2f0c8;padding:10pt;font-family:Courier New,monospace;font-size:9pt;margin:4pt 0 10pt;white-space:pre-wrap;">JSP
+&lt;%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core"%&gt;
+&lt;%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%&gt;
+
+&lt;%-- c:if --&gt;
+&lt;c:if test="${emp.eno &gt; 100}"&gt;&lt;p&gt;Senior Employee&lt;/p&gt;&lt;/c:if&gt;
+
+&lt;%-- c:choose (if-else) --&gt;
+&lt;c:choose&gt;
+    &lt;c:when test="${emp.eno &gt; 100}"&gt;Senior&lt;/c:when&gt;
+    &lt;c:otherwise&gt;Junior&lt;/c:otherwise&gt;
+&lt;/c:choose&gt;
+
+&lt;%-- c:forEach (loop) --&gt;
+&lt;table&gt;
+&lt;c:forEach var="emp" items="${employeeList}"&gt;
+    &lt;tr&gt;&lt;td&gt;${emp.eno}&lt;/td&gt;&lt;td&gt;${emp.ename}&lt;/td&gt;&lt;/tr&gt;
+&lt;/c:forEach&gt;
+&lt;/table&gt;
+
+&lt;%-- fmt:formatDate --&gt;
+&lt;fmt:formatDate value="${today}" pattern="dd-MM-yyyy"/&gt;</pre><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">18. Interview Questions & Answers</h2><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q1. What are the different ways to inject collections in Spring?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> Spring supports four collection types via XML: &lt;list&gt; (ordered, duplicates), &lt;set&gt; (unordered, no duplicates), &lt;map&gt; (key-value, any type), &lt;props&gt; (String key-value). In annotation style, @Value with SpEL is used for List, Set, Map. For Properties, a @Bean method with @Autowired is the cleanest approach.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q2. What is an Inner Bean? When would you use it?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> An inner bean is defined inside another bean's &lt;property&gt; tag with no id. It is exclusive to the enclosing bean and cannot be reused. Use it when a dependency is private to one bean only. In annotation/Java config, the equivalent is creating the object inline inside a @Bean method.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q3. What is the difference between Spring Config Inheritance and Java Class Inheritance?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> Spring Config Inheritance (parent= in XML) is about reusing Spring property values across bean definitions — the Java class is the same. Java Class Inheritance (extends in Java) is standard OOP — the child class inherits fields and methods from the parent class and can add its own. They are completely different concepts. For example, PermanentEmployee extends Employee in Java, meaning it gets eno, ename, dept fields plus adds pfAmount and bonus.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q4. In the Employee and PermanentEmployee example, what does super() do?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> super() calls the parent class constructor. In PermanentEmployee(int eno, String ename, String dept, double pfAmount, double bonus), calling super(eno, ename, dept) passes the common fields to Employee's constructor so Employee handles setting those fields. PermanentEmployee only handles its own additional fields (pfAmount, bonus).</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q5. What is AOP and why is it used?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> AOP (Aspect-Oriented Programming) separates cross-cutting concerns like logging, security, and transactions from business logic. Without AOP you'd duplicate the same logging code in every service method. With AOP you write it once in an Aspect class and Spring applies it to all matching methods via pointcut expressions.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q6. What is the difference between @Before and @Around advice?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> @Before runs before the method but cannot stop it from executing. @Around wraps the entire method — you must call pjp.proceed() to actually run the target method. If you don't call proceed(), the method is skipped. @Around is the most powerful advice and is used for performance monitoring, caching, or conditional execution.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q7. How do you enable AOP in Spring — XML vs Annotation?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> XML: add &lt;aop:aspectj-autoproxy/&gt; in bean.xml. Annotation/Java Config: add @EnableAspectJAutoProxy on the @Configuration class. In both cases the Aspect class itself uses the same annotations (@Aspect, @Before, @After etc.).</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q8. What is PropertyPlaceholderConfigurer? How is it done in annotation style?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> It externalizes config values into a .properties file and injects via ${key}. XML: &lt;context:property-placeholder location="classpath:db.properties"/&gt;. Annotation: add @PropertySource("classpath:db.properties") on the @Configuration class and use @Value("${key}") on fields. A PropertySourcesPlaceholderConfigurer @Bean must also be declared to resolve placeholders.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q9. What is JdbcTemplate? How do you configure it with annotations?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> JdbcTemplate simplifies JDBC by removing boilerplate. XML: define dataSource and jdbcTemplate beans. Annotation/Java Config: create a @Bean DataSource method and a @Bean JdbcTemplate(dataSource) method in AppConfig. Then inject JdbcTemplate with @Autowired in the DAO. Use update() for INSERT/UPDATE/DELETE and query()/queryForObject() for SELECT.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q10. How do you enable Transaction Management in annotation style?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> Add @EnableTransactionManagement to the @Configuration class. Define a @Bean PlatformTransactionManager method that returns a new DataSourceTransactionManager(dataSource). Then annotate any service method with @Transactional. Spring will automatically begin a transaction, commit on success, or roll back on RuntimeException.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q11. What is @Transactional and what are its key attributes?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> @Transactional wraps a method in a DB transaction — commit if all steps succeed, rollback if any step throws a RuntimeException. Key attributes: propagation (REQUIRED default — join existing or create new), isolation (isolation level), rollbackFor (which exceptions trigger rollback), readOnly (optimization for read-only), timeout (max seconds).</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q12. What is the difference between forward and redirect in Servlets?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> Forward (RequestDispatcher.forward): server-side, browser URL does not change, request attributes are preserved — used to pass data from Servlet to JSP. Redirect (response.sendRedirect): client-side, browser makes a new request, URL changes, request attributes are lost — used to redirect to a different page after form submission.</div><h3 style="color:#2e7d52;border-left:3pt solid #2e9e5e;padding-left:8pt;margin:12pt 0 4pt;">Q13. Why is JSTL preferred over scriptlets in JSP?</h3><div style="background:#e8f5ee;border-left:4pt solid #2e9e5e;padding:8pt 12pt;margin:8pt 0;"><strong>Answer</strong> JSTL keeps JSP clean — no raw Java code mixed with HTML. It works with EL (${...}) for reading values, is reusable, easier to read and maintain, and front-end developers can understand it without knowing Java. Best practice is to use EL + JSTL for view and keep all Java logic in Servlets or Spring controllers.</div><br/><h2 style="color:#1a7a45;border-bottom:2px solid #2e9e5e;padding-bottom:4pt;">19. Quick Reference Cheat Sheet</h2><h3 style="color:#2e7d52;">📋 Spring Advanced — All Key Terms</h3><table style="border-collapse:collapse;width:100%;font-size:9pt;"><tr><TH style="border:1pt solid #ccc;padding:5pt 9pt;background:#1a7a45;color:#fff;font-weight:bold;">Term</TH><TH style="border:1pt solid #ccc;padding:5pt 9pt;background:#1a7a45;color:#fff;font-weight:bold;">One-line Definition</TH></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Collection Injection</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">&lt;list&gt;, &lt;set&gt;, &lt;map&gt;, &lt;props&gt; in XML / @Value SpEL in annotation</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Inner Bean</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Bean inside another bean's property — no id, not reusable</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Spring Config Inheritance</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Child bean inherits XML config values from parent via parent= attribute</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Java Class Inheritance</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Child class extends parent class — gets fields + methods (real Java OOP)</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">PermanentEmployee</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Child of Employee — inherits eno/ename/dept, adds pfAmount/bonus</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">super()</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Calls parent constructor from child constructor</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">AOP</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Separates cross-cutting concerns from business logic</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Aspect</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Class containing cross-cutting logic (@Aspect + @Component)</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Advice</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Action at join point — @Before, @After, @Around etc.</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Pointcut</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Expression selecting which methods to intercept</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">@EnableAspectJAutoProxy</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Annotation to enable AOP (replaces &lt;aop:aspectj-autoproxy/&gt;)</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">@Around + pjp.proceed()</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Wraps method — must call proceed() to run the actual method</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">@PropertySource</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Annotation to load .properties file (replaces context:property-placeholder)</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">@Value("${key}")</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Inject value from properties file using annotation</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">ResourceBundleMessageSource</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">i18n — load locale-specific messages from .properties files</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">JdbcTemplate</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Simplifies JDBC — update() for write, query() for read</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">@EnableTransactionManagement</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Activates @Transactional support in Java config</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">@Transactional</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Wraps method in DB transaction — auto rollback on failure</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Tomcat</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Servlet container running Java web apps at port 8080</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">@WebServlet</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Annotation to map a URL to a Servlet (replaces web.xml mapping)</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">RequestDispatcher.forward</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Server-side pass to JSP — URL unchanged, attributes preserved</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">response.sendRedirect</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Client-side redirect — URL changes, attributes lost</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">JSP EL ${...}</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#fff;color:#111;font-weight:normal;">Expression Language — reads bean/request attributes in JSP</TD></tr><tr><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">JSTL c:forEach</TD><TD style="border:1pt solid #ccc;padding:5pt 9pt;background:#f8fbf9;color:#111;font-weight:normal;">Loop tag replacing Java for-each scriptlet in JSP</TD></tr></table><br/></body></html>
